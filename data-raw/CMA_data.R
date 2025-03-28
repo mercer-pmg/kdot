@@ -11,7 +11,7 @@ cma_name <- "2025 LTCMAs.xlsx"
 cma_return_risk <- readxl::read_xlsx(
   path  = paste0(cma_dir, cma_name),
   skip  = 3,
-  range = "A4:E87")
+  range = "A4:F87")
 
 # cma_return_risk <- readxl::read_xlsx(
 #   path = paste0(cma_dir,cma_dirty_name),
