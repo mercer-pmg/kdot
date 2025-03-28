@@ -4,10 +4,10 @@
 \alias{portfolio_holdings}
 \title{Get security-level portfolio holdings.}
 \usage{
-portfolio_holdings(portfolio_name, date = Sys.Date())
+portfolio_holdings(strategy_name, date = Sys.Date())
 }
 \arguments{
-\item{portfolio_name}{character}
+\item{strategy_name}{character}
 
 \item{date}{character}
 }
@@ -16,10 +16,4 @@ a tibble
 }
 \description{
 Get security-level portfolio holdings.
-}
-\examples{
-x <- "Multifactor Series ETF 060"
-portfolio_holdings(x)
-portfolio_holdings(x, "2022-01-23")
-
 }

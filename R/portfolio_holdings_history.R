@@ -11,12 +11,12 @@
 
 portfolio_holdings_history <- function(portfolio_name){
 
-  date <- symbol <- target <- portfolio <- NULL
+  Date <- Ticker <- Target <- Strategy <- NULL
 
-  dat <- sleeve_holdings |>
-    dplyr::bind_rows(model_portfolio_holdings) |>
-    dplyr::filter(portfolio == portfolio_name) |>
-    dplyr::select(date, symbol, target)
+  dat <- strategy_holdings |>
+    # dplyr::bind_rows(model_portfolio_holdings) |>
+    dplyr::filter(Strategy == portfolio_name) |>
+    dplyr::select(Date, Ticker, Target)
 
   return(dat)
 
