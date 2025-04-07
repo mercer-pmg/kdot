@@ -8,25 +8,25 @@
 #'
 portfolio_upload_ycharts <- function(portfolio_name){
 
-  target <- symbol <- Date <- Symbol <- `Target Weight` <- NULL
+  Ticker <- Target <- symbol <- Date <- Symbol <- `Target Weight` <- NULL
 
   dat <- kdot::portfolio_holdings_history(portfolio_name) |>
-    dplyr::mutate(target = target |> round(4))
+    dplyr::mutate(Target = Target |> round(4))
 
   cash_allocation <- dat |>
-    dplyr::group_by(date) |>
+    dplyr::group_by(Date) |>
     dplyr::summarise(
-      target = 1 - sum(target),
-      target = target |> round(4)) |>
-    dplyr::mutate(symbol = "$:CASH")
+      Target = 1 - sum(Target),
+      Target = Target |> round(4)) |>
+    dplyr::mutate(Ticker = "$:CASH")
 
   dat <- dat |>
     dplyr::bind_rows(cash_allocation) |>
-    dplyr::arrange(date) |>
+    dplyr::arrange(Date) |>
     dplyr::mutate(
-      Date = date |> format("%m/%d/%Y"),
-      Symbol = symbol,
-      `Target Weight` = target |> round(4)) |>
+      Date = Date |> format("%m/%d/%Y"),
+      Symbol = Ticker,
+      `Target Weight` = Target |> round(4)) |>
     dplyr::select(Date, Symbol, `Target Weight`)
 
   readr::write_csv(dat, file = paste(portfolio_name, "- YCharts Upload.csv"))
