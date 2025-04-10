@@ -14,7 +14,12 @@ strategy_return <- function(
     end,
     type = "net") {
 
-  Strategy <- Date <- Value <- NULL
+  Strategy <- strategy <- Date <- Value <- ycharts_id <- NULL
+
+  # Translate strategy name into YCharts portfolio id.
+  strategy_name <- strategy_ids |>
+    dplyr::filter(strategy == strategy_name) |>
+    dplyr::pull(ycharts_id)
 
   # Read either gross or net indexes dataset.
   if(type == "net"){
