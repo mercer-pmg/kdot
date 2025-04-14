@@ -39,7 +39,7 @@ strategy_return <- function(
 
   # Find start and end values for holding period.
   start <- index |> dplyr::filter(Date == lubridate::as_date(start)) |> dplyr::pull(Value)
-  end   <- index |> dplyr::filter(Date == lubridate::as_date(end)) |> dplyr::pull(Value)
+  end   <- index |> dplyr::filter(Date <= lubridate::as_date(end)) |> dplyr::slice_max(Date, n = 1) |> dplyr::pull(Value)
 
   # Calculate return.
   strat_return <- end/start - 1
