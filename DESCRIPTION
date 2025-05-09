@@ -21,6 +21,7 @@ Imports:
     readr,
     scales,
     stats,
+    stringr,
     tibble,
     tidyr,
     tidyselect
