@@ -2,6 +2,7 @@
 
 export(annual_returns)
 export(create_classification_wb)
+export(dated_filename)
 export(expected_equity_beta)
 export(expected_return)
 export(expected_risk)
