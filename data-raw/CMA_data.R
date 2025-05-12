@@ -35,12 +35,14 @@ cma_cor_mat <- readxl::read_xlsx(
 # source("data-raw/model_portfolio_holdings.R")
 source("data-raw/strategy_holdings.R")
 source("data-raw/strategy_ids.R")
+source("data-raw/product-classification-framework.R")
 
 usethis::use_data(
   cma_return_risk,
   cma_cor_mat,
   strategy_holdings,
   strategy_ids,
+  product_classification_framework,
 #   sleeve_holdings,
 #   model_portfolio_holdings,
 #
