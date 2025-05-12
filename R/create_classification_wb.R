@@ -77,7 +77,7 @@ create_classification_wb <- function(all_local) {
     openxlsx::writeDataTable(wb, "Classified", reviewed)
 
     # Add hidden worksheet of current product classification framework
-    framework <- readr::read_csv("MA Product Classification Framework.csv")
+    framework <- product_classification_framework
 
     openxlsx::addWorksheet(wb, "Asset Classes", visible = FALSE)
     openxlsx::writeData(wb, "Asset Classes", x = framework)
