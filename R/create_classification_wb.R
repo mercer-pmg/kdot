@@ -23,9 +23,9 @@ create_classification_wb <- function(all_local) {
       dplyr::filter(AUM != 0)
 
     # Remove CUSIPs with underscore, dash from unreviewed_aum DF
-    unreviewed_aum <- unreviewed_aum |>
-      dplyr::filter(!stringr::str_detect(CUSIP, "_")) |>
-      dplyr::filter(!stringr::str_detect(CUSIP, "-"))
+    # unreviewed_aum <- unreviewed_aum |>
+    #   dplyr::filter(!stringr::str_detect(CUSIP, "_")) |>
+    #   dplyr::filter(!stringr::str_detect(CUSIP, "-"))
 
     # Rename unreviewed_aum
     dat <- unreviewed_aum
