@@ -8,7 +8,8 @@
 #'
 create_classification_wb <- function(all_local) {
 
-  AUM <- `Auto Assigned` <- CUSIP <- `Product Sub Type Name` <- n <- NULL
+  AUM <- `Auto Assigned` <- CUSIP <- `Product Sub Type Name` <- n <-
+  `Product ID` <- NULL
 
     # DF of reviewed products
     reviewed   <- all_local |>
@@ -21,6 +22,11 @@ create_classification_wb <- function(all_local) {
     # DF of unreviewed products with AUM
     unreviewed_aum <- unreviewed |>
       dplyr::filter(AUM != 0)
+
+    zero_aum_funds <- unreviewed |>
+      dplyr::filter(`Product Sub Type Name` %in% c("ETF", "Mutual Fund")) |>
+      dplyr::filter(!`Product ID` %in% unreviewed_aum$`Product ID`) |>
+      dplyr::mutate(`Assigned Asset Class` = NA)
 
     # Remove CUSIPs with underscore, dash from unreviewed_aum DF
     # unreviewed_aum <- unreviewed_aum |>
@@ -72,6 +78,10 @@ create_classification_wb <- function(all_local) {
       openxlsx::writeDataTable(wb, names(dat)[i], dat[[i]])
     }
 
+    # Create worksheet for zero AUM ETFs and Mutual Funds
+    openxlsx::addWorksheet(wb, "Zero AUM")
+    openxlsx::writeDataTable(wb, "Zero AUM", zero_aum_funds)
+
     # Create worksheet of all already classified products
     openxlsx::addWorksheet(wb, "Classified")
     openxlsx::writeDataTable(wb, "Classified", reviewed)
@@ -121,6 +131,23 @@ create_classification_wb <- function(all_local) {
       style = openxlsx::createStyle(fgFill = "#C5D9F1"),
       cols  = 13,
       rows  = 2:(nrow(reviewed)+1)
+    )
+
+    openxlsx::dataValidation(
+      wb    = wb,
+      sheet = "Zero AUM",
+      cols  = 13,
+      rows  = 2:(nrow(zero_aum_funds)+1),
+      type  = "list",
+      value = paste0("'Asset Classes'!$D$2:$D$", (nrow(framework)+1))
+    )
+
+    openxlsx::addStyle(
+      wb    = wb,
+      sheet = "Zero AUM",
+      style = openxlsx::createStyle(fgFill = "#C5D9F1"),
+      cols  = 13,
+      rows  = 2:(nrow(zero_aum_funds)+1)
     )
 
 
