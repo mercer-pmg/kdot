@@ -11,6 +11,7 @@ create_classification_wb <- function(all_local) {
   AUM <- `Auto Assigned` <- CUSIP <- `Product Sub Type Name` <- n <-
   `Product ID` <- NULL
 
+
     # DF of reviewed products
     reviewed   <- all_local |>
       dplyr::filter(!`Auto Assigned`) |>
@@ -161,13 +162,17 @@ create_classification_wb <- function(all_local) {
 
 
     # Add FactSet functions
-    openxlsx::writeFormula(
-      wb       = wb,
-      sheet    = "Mutual Fund",
-      x        = paste0('FDS(D', 2:(nrow(dat[["Mutual Fund"]])+1),',"FFD_SEG")'),
-      startRow = 2,
-      startCol = 14
-    )
+
+    if("Mutual Fund" %in% names(dat)) {
+      openxlsx::writeFormula(
+        wb       = wb,
+        sheet    = "Mutual Fund",
+        x        = paste0('FDS(D', 2:(nrow(dat[["Mutual Fund"]])+1),',"FFD_SEG")'),
+        startRow = 2,
+        startCol = 14
+      )
+    }
+
 
 
     return(wb)
