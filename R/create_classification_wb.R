@@ -23,10 +23,13 @@ create_classification_wb <- function(all_local) {
     unreviewed_aum <- unreviewed |>
       dplyr::filter(AUM != 0)
 
+
     zero_aum_funds <- unreviewed |>
       dplyr::filter(`Product Sub Type Name` %in% c("ETF", "Mutual Fund")) |>
       dplyr::filter(!`Product ID` %in% unreviewed_aum$`Product ID`) |>
       dplyr::mutate(`Assigned Asset Class` = NA)
+
+
 
     # Remove CUSIPs with underscore, dash from unreviewed_aum DF
     # unreviewed_aum <- unreviewed_aum |>
@@ -62,8 +65,14 @@ create_classification_wb <- function(all_local) {
     dat <- dat |> purrr::map(as.data.frame)
     names(dat) <- keys
 
+
+
     # Add Segment column to Mutual Fund table
-    dat[["Mutual Fund"]] <- dat[["Mutual Fund"]] |> dplyr::mutate(Segment = NA)
+
+    if("Mutual Fund" %in% names(dat)) {
+      dat[["Mutual Fund"]] <- dat[["Mutual Fund"]] |> dplyr::mutate(Segment = NA)
+    }
+
 
     wb <- openxlsx::createWorkbook()
 
