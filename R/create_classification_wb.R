@@ -69,10 +69,9 @@ create_classification_wb <- function(all_local) {
 
 
     # Add Segment column to Mutual Fund table
-
-    if("Mutual Fund" %in% names(dat)) {
-      dat[["Mutual Fund"]] <- dat[["Mutual Fund"]] |> dplyr::mutate(Segment = NA)
-    }
+    # if("Mutual Fund" %in% names(dat)) {
+    #   dat[["Mutual Fund"]] <- dat[["Mutual Fund"]] |> dplyr::mutate(Segment = NA)
+    # }
 
 
     wb <- openxlsx::createWorkbook()
@@ -83,9 +82,12 @@ create_classification_wb <- function(all_local) {
     openxlsx::writeData(wb, "Status", keys_n)
 
     # Create worksheets for each Product Sub Type Name
-    for(i in 1:length(dat)) {
-      openxlsx::addWorksheet(wb, names(dat)[i])
-      openxlsx::writeDataTable(wb, names(dat)[i], dat[[i]])
+
+    if(length(dat) > 0) {
+      for(i in 1:length(dat)) {
+        openxlsx::addWorksheet(wb, names(dat)[i])
+        openxlsx::writeDataTable(wb, names(dat)[i], dat[[i]])
+      }
     }
 
     # Create worksheet for zero AUM ETFs and Mutual Funds
