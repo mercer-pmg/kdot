@@ -1,47 +1,68 @@
 #' Find Duplicate Strategies
 #'
-#' @param data
-#' @param threshold Numeric. The distance threshold for considering strategies as duplicates (default: 0)
-#' @param round Integer. Number of decimal places to round ticker weights (default: 6)
-#' @param print_csv Logical. If TRUE, writes CSV file; if FALSE, only returns data (default: TRUE)
+#' @param data cleaned orion platform tibble
+#' @param threshold distance threshold for duplicates (default: 0)
+#' @param round decimal places to round weights (default: 6)
+#' @param print_csv write CSV file (default: TRUE)
+#' @param print_results print results to console (default: TRUE)
+#' @param granularity analysis level: "model_agg" or "ticker" (default: "model_agg")
 #'
-#' @return A tibble with detailed duplicate strategy information. If print_csv is TRUE, also writes a CSV file.
+#' @return tibble with duplicate strategy information
 #' @export
 #'
 #' @examples
 #' # Load sample data
 #' aim <- readr::read_csv("Orion Platform - XXXX.XX.csv")
 #'
-#' # Find exact duplicates and save to CSV (default behavior)
-#' exact_duplicates <- find_duplicate_strategies(aim, threshold = 0)
+#' # Find exact duplicates (default)
+#' exact_duplicates <- find_duplicate_strategies(aim)
 #'
-#' # Find near duplicates and return as tibble without saving CSV
-#' near_duplicates <- find_duplicate_strategies(aim, threshold = 0.005, print_csv = FALSE)
+#' # Find near duplicates with ticker-level analysis
+#' near_duplicates <- find_duplicate_strategies(aim, threshold = 0.005, granularity = "ticker")
 #'
-#' # Custom analysis with different rounding
-#' custom_analysis <- find_duplicate_strategies(aim, threshold = 0.01, round = 8)
-#'
-find_duplicate_strategies <- function(data, threshold = 0, round = 6, print_csv = TRUE) {
-  strategy <- ticker <- agg_target <- target <- ticker_weight <- total_weight <- NULL
+find_duplicate_strategies <- function(data, threshold = 0, round = 6, print_csv = TRUE, print_results = TRUE, granularity = "model_agg") {
+  strategy <- ticker <- model_agg <- agg_target <- target <- ticker_weight <- total_weight <- NULL
   strategy_1 <- strategy_2 <- position <- NULL
 
-  matrix <- data |>
-    dplyr::mutate(
-      agg_target = ifelse(is.na(agg_target), 0, agg_target) / 100,
-      target = target / 100,
-      ticker_weight = round(agg_target * target, round)
-    ) |>
-    dplyr::group_by(strategy, ticker) |>
-    dplyr::summarise(total_weight = sum(ticker_weight), .groups = "drop") |>
-    tidyr::pivot_wider(
-      names_from = ticker,
-      values_from = total_weight,
-      values_fill = 0
-    ) |>
-    tibble::column_to_rownames("strategy") |>
-    as.matrix()
+  if (!granularity %in% c("ticker", "model_agg")) {
+    stop("granularity must be either 'ticker' or 'model_agg'")
+  }
 
-  cat("Running duplicate analysis with threshold:", threshold, "\n")
+  if (granularity == "model_agg") {
+    # Model aggregation level
+    matrix <- data |>
+      dplyr::mutate(agg_target = ifelse(is.na(agg_target), 0, round(agg_target, round))) |>
+      dplyr::group_by(strategy, model_agg) |>
+      dplyr::summarise(total_weight = dplyr::first(agg_target), .groups = "drop") |>
+      tidyr::pivot_wider(
+        names_from = model_agg,
+        values_from = total_weight,
+        values_fill = 0
+      ) |>
+      tibble::column_to_rownames("strategy") |>
+      as.matrix()
+  } else {
+    # Ticker level
+    matrix <- data |>
+      dplyr::mutate(
+        agg_target = ifelse(is.na(agg_target), 0, agg_target) / 100,
+        target = target / 100,
+        ticker_weight = round(agg_target * target, round)
+      ) |>
+      dplyr::group_by(strategy, ticker) |>
+      dplyr::summarise(total_weight = sum(ticker_weight), .groups = "drop") |>
+      tidyr::pivot_wider(
+        names_from = ticker,
+        values_from = total_weight,
+        values_fill = 0
+      ) |>
+      tibble::column_to_rownames("strategy") |>
+      as.matrix()
+  }
+
+  if (print_results) {
+    cat("Running duplicate analysis with threshold:", threshold, "\n")
+  }
 
   # Calc euclidean distance to determine similarity
   distance_matrix <- dist(matrix, method = "euclidean") |> as.matrix()
@@ -55,7 +76,9 @@ find_duplicate_strategies <- function(data, threshold = 0, round = 6, print_csv 
   )
 
   if (nrow(duplicates) == 0) {
-    cat("No duplicate strategies found with threshold:", threshold, "\n")
+    if (print_results) {
+      cat("No duplicate strategies found with threshold:", threshold, "\n")
+    }
     return(tibble::tibble()) # Return empty tibble
   }
 
@@ -92,17 +115,27 @@ find_duplicate_strategies <- function(data, threshold = 0, round = 6, print_csv 
       by = "strategy"
     )
 
-  cat("Found", nrow(duplicates_summary), "pairs\n")
+  # Arrange the output by distance (smallest to largest), then by pair_id
+  duplicates_detailed <- duplicates_detailed |>
+    dplyr::arrange(distance, pair_id)
+
+  if (print_results) {
+    cat("Found", nrow(duplicates_summary), "pairs\n")
+  }
 
   if (print_csv) {
     output_filename <- paste0(
       "duplicates_threshold_",
       gsub("\\.", "_", threshold),
+      "_granularity_",
+      granularity,
       ".csv"
     )
 
     readr::write_csv(duplicates_detailed, output_filename)
-    cat("Results saved to:", output_filename, "\n")
+    if (print_results) {
+      cat("Results saved to:", output_filename, "\n")
+    }
   }
 
   return(duplicates_detailed)
