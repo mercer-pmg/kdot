@@ -2,7 +2,7 @@
 #'
 #' @param data Orion Platform XXXX-XX.csv
 #'
-#' @return A tibble with added columns: 'category', 'model_series', 'asset_category', and 'is_SMA'.
+#' @return A tibble with added columns: 'category', 'model_series', 'asset_category', 'market_cap', and 'is_SMA'.
 #' @export
 #'
 clean_orion_platform <- function(data) {
@@ -34,15 +34,22 @@ clean_orion_platform <- function(data) {
         stringr::str_detect(model_agg, "MA Fixed Income") ~ "Fixed Income",
         stringr::str_detect(model_agg, "Ladder \\(ETF\\)$") ~ "Fixed Income ETF Ladder",
         stringr::str_detect(model_agg, "BlackRock|Nuveen|PIMCO") ~ "Third-Party Fixed Income SMA",
-        TRUE ~ "Other"
+        .default = "Other"
       ),
       asset_category = dplyr::case_when(
-        grepl("Series|Quant", model_series) ~ "Equity",
-        grepl("Fixed Income", model_series) ~ "Fixed Income",
-        grepl("Other", model_series) ~ "Other",
-        TRUE ~ NA_character_
+        stringr::str_detect(model_series, "Series|Quant") ~ "Equity",
+        stringr::str_detect(model_series, "Fixed Income") ~ "Fixed Income",
+        stringr::str_detect(model_series, "Other") ~ "Other",
+        .default = NA_character_
       ),
-      is_SMA = grepl("SMA", model_series)
+      market_cap = dplyr::case_when(
+        stringr::str_detect(model_agg, "\\bAll Cap\\b") ~ "US All Cap",
+        stringr::str_detect(model_agg, "\\bLarge Cap\\b") ~ "US Large Cap",
+        stringr::str_detect(model_agg, "\\bSmall Cap\\b") ~ "US Small Cap",
+        stringr::str_detect(model_agg, "\\bMid Cap\\b") ~ "US Mid Cap",
+        .default = "Other"
+      ),
+      is_SMA = stringr::str_detect(model_series, "SMA")
     )
 
   return(categorized_data)
