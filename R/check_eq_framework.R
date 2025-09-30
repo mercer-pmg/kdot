@@ -13,7 +13,7 @@
 #' # Check framework compliance with MA approved exceptions
 #' eq_results <- check_eq_framework(aim, exception_patterns = TRUE)
 check_eq_framework <- function(data, exception_patterns = TRUE) {
-  strategy <- type <- asset_category <- model_agg <- agg_target <- model_agg_weight <- NULL
+  strategy <- type <- asset_category <- model_agg <- agg_target <- model_agg_weight <- market_cap <- NULL
   actual_us_lc <- actual_us_sc <- actual_us_ac <- actual_us_mc <- eq_total_allocation <- NULL
   is_us_only <- base_lc_target <- base_sc_target <- equity_framework_pct <- us_eq_target <- NULL
   target_us_lc <- target_us_sc <- target_us_ac <- target_us_mc <- NULL
@@ -28,7 +28,7 @@ check_eq_framework <- function(data, exception_patterns = TRUE) {
     dplyr::filter(type %in% c("Market Series", "Multifactor Series", "Income Series")) |>
     dplyr::filter(asset_category == "Equity") |>
     tidyr::replace_na(list(agg_target = 0)) |>
-    dplyr::group_by(strategy, type, model_agg) |>
+    dplyr::group_by(strategy, type, model_agg, market_cap) |>
     dplyr::summarise(model_agg_weight = dplyr::first(agg_target), .groups = "drop")
 
   results_all <- eq_model_agg_summary |>
