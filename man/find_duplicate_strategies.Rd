@@ -40,6 +40,6 @@ aim <- readr::read_csv("Orion Platform - XXXX.XX.csv")
 exact_duplicates <- find_duplicate_strategies(aim)
 
 # Find near duplicates with ticker-level analysis
-near_duplicates <- find_duplicate_strategies(aim, threshold = 0.005, granularity = "ticker")
+near_duplicates <- find_duplicate_strategies(aim, threshold = 2, granularity = "ticker")
 
 }

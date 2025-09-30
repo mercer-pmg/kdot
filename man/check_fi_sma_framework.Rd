@@ -2,31 +2,26 @@
 % Please edit documentation in R/check_fi_sma_framework.R
 \name{check_fi_sma_framework}
 \alias{check_fi_sma_framework}
-\title{Check Fixed Income SMA Framework Compliance}
+\title{Check Fixed Income SMA Framework}
 \usage{
 check_fi_sma_framework(data, test_error_injection = FALSE)
 }
 \arguments{
-\item{data}{Data frame containing strategy allocation data with columns: strategy, type, asset_category, model_agg, model_series, agg_target, is_SMA}
+\item{data}{cleaned orion platform tibble}
 
-\item{test_error_injection}{Logical. If TRUE, injects test errors for validation (default: FALSE)}
+\item{test_error_injection}{inject test errors for validation (default: FALSE)}
 }
 \value{
-A list containing:
-\itemize{
-\item allocation_check: Full allocation check results
-\item strategies_pass: Strategies that pass the framework
-\item strategies_fail: Strategies that fail the framework
-}
+list containing allocation_check, strategies_pass, and strategies_fail
 }
 \description{
-Check Fixed Income SMA Framework Compliance
+Check Fixed Income SMA Framework
 }
 \examples{
 # Load sample data
 aim <- readr::read_csv("Orion Platform - XXXX.XX.csv") |> clean_orion_platform()
 
-# Check framework compliance (default behavior)
+# Check framework
 fi_results <- check_fi_sma_framework(aim)
 
 # Test with error injection

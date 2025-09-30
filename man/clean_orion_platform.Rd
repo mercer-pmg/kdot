@@ -10,7 +10,7 @@ clean_orion_platform(data)
 \item{data}{Orion Platform XXXX-XX.csv}
 }
 \value{
-A tibble with added columns: 'category', 'model_series', 'asset_category', and 'is_SMA'.
+A tibble with added columns: 'category', 'model_series', 'asset_category', 'market_cap', and 'is_SMA'.
 }
 \description{
 Clean and Categorize Orion Platform Data
