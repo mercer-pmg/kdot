@@ -1,10 +1,9 @@
 #' Check Equity Framework
 #'
 #' @param data cleaned orion platform tibble
-#' @param write_excel write results to Excel file (default: FALSE)
 #' @param exception_patterns apply exception filters: "(ETF, exCore)|(ERISA)|(ETF, Sustainable)|(MF, Social)"
 #'
-#' @return list with allocation_check, strategies_pass, and strategies_fail tibbles
+#' @return list with three components: results_all, results_pass, results_fail
 #' @export
 #'
 #' @examples
@@ -12,8 +11,14 @@
 #' aim <- readr::read_csv("Orion Platform - XXXX.XX.csv") |> clean_orion_platform()
 #'
 #' # Check framework compliance with MA approved exceptions
-#' eq_results <- check_eq_framework(aim, write_excel = TRUE, exception_patterns = TRUE)
-check_eq_framework <- function(data, write_excel = FALSE, exception_patterns = TRUE) {
+#' eq_results <- check_eq_framework(aim, exception_patterns = TRUE)
+check_eq_framework <- function(data, exception_patterns = TRUE) {
+  strategy <- type <- asset_category <- model_agg <- agg_target <- model_agg_weight <- NULL
+  actual_us_lc <- actual_us_sc <- actual_us_ac <- actual_us_mc <- eq_total_allocation <- NULL
+  is_us_only <- base_lc_target <- base_sc_target <- equity_framework_pct <- us_eq_target <- NULL
+  target_us_lc <- target_us_sc <- target_us_ac <- target_us_mc <- NULL
+  us_lc_check <- us_sc_check <- us_ac_check <- us_mc_check <- passed <- NULL
+
   if (exception_patterns) {
     exception_regex <- "\\(ETF, exCore\\)|\\(ERISA\\)|\\(ETF, Sustainable\\)|\\(MF, Social\\)"
     data <- data |> dplyr::filter(!stringr::str_detect(strategy, stringr::regex(exception_regex)))
@@ -26,7 +31,7 @@ check_eq_framework <- function(data, write_excel = FALSE, exception_patterns = T
     dplyr::group_by(strategy, type, model_agg) |>
     dplyr::summarise(model_agg_weight = dplyr::first(agg_target), .groups = "drop")
 
-  allocation_check <- eq_model_agg_summary |>
+  results_all <- eq_model_agg_summary |>
     dplyr::group_by(strategy, type) |>
     dplyr::summarise(
       actual_us_lc = sum(model_agg_weight[market_cap == "US Large Cap"]),
@@ -59,26 +64,12 @@ check_eq_framework <- function(data, write_excel = FALSE, exception_patterns = T
       passed = us_lc_check & us_sc_check & us_ac_check & us_mc_check
     )
 
-  strategies_pass <- allocation_check |> dplyr::filter(passed == TRUE)
-  strategies_fail <- allocation_check |> dplyr::filter(passed == FALSE)
-
-  if (write_excel) {
-    wb <- openxlsx::createWorkbook()
-
-    openxlsx::addWorksheet(wb, "All Results")
-    openxlsx::addWorksheet(wb, "Pass")
-    openxlsx::addWorksheet(wb, "Fail")
-
-    openxlsx::writeData(wb, "All Results", allocation_check)
-    openxlsx::writeData(wb, "Pass", strategies_pass)
-    openxlsx::writeData(wb, "Fail", strategies_fail)
-
-    openxlsx::saveWorkbook(wb, "equity_framework_results.xlsx", overwrite = TRUE)
-  }
+  results_pass <- results_all |> dplyr::filter(passed == TRUE)
+  results_fail <- results_all |> dplyr::filter(passed == FALSE)
 
   return(list(
-    allocation_check = allocation_check,
-    strategies_pass = strategies_pass,
-    strategies_fail = strategies_fail
+    results_all = results_all,
+    results_pass = results_pass,
+    results_fail = results_fail
   ))
 }

@@ -3,7 +3,7 @@
 #' @param data cleaned orion platform tibble
 #' @param test_error_injection inject test errors for validation (default: FALSE)
 #'
-#' @return list containing allocation_check, strategies_pass, and strategies_fail
+#' @return list with three components: results_all, results_pass, results_fail
 #' @export
 #'
 #' @examples
@@ -55,7 +55,7 @@ check_fi_sma_framework <- function(data, test_error_injection = FALSE) {
         dplyr::arrange(strategy, model_agg)
 
     # Check allocations
-    allocation_check <- fi_model_agg_summary |>
+    results_all <- fi_model_agg_summary |>
         dplyr::group_by(strategy, type) |>
         dplyr::summarise(
             sma_allocation = sum(model_agg_allocation[is_sma_group]),
@@ -79,18 +79,12 @@ check_fi_sma_framework <- function(data, test_error_injection = FALSE) {
             fixed_income_allocation = sma_target_met & non_sma_target_met
         )
 
-    strategies_pass <- allocation_check |> dplyr::filter(fixed_income_allocation == TRUE)
-    strategies_fail <- allocation_check |> dplyr::filter(fixed_income_allocation == FALSE)
-
-    cat(sprintf(
-        "Number of strategies that Pass: %d\nNumber of strategies that FAIL: %d\n",
-        nrow(strategies_pass),
-        nrow(strategies_fail)
-    ))
+    results_pass <- results_all |> dplyr::filter(fixed_income_allocation == TRUE)
+    results_fail <- results_all |> dplyr::filter(fixed_income_allocation == FALSE)
 
     return(list(
-        allocation_check = allocation_check,
-        strategies_pass = strategies_pass,
-        strategies_fail = strategies_fail
+        results_all = results_all,
+        results_pass = results_pass,
+        results_fail = results_fail
     ))
 }

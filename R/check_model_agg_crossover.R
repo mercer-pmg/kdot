@@ -1,11 +1,8 @@
 #' Check for model_agg crossovers between different RB series'
 #'
 #' @param data cleaned orion platform tibble
-#' @param print_results print results to console
-#' @param write_csv write results to CSV file
-#' @param csv_filename CSV output filename
 #'
-#' @return A data frame containing strategies that violate model_agg crossover rules.
+#' @return list with three components: results_all, results_pass, results_fail
 #' @export
 #'
 #' @examples
@@ -14,12 +11,11 @@
 #'     clean_orion_platform()
 #'
 #' # Check for violations
-#' violations <- check_model_agg_crossover(aim)
-#'
-#' # Check and save results to CSV
-#' violations <- check_model_agg_crossover(aim, write_csv = TRUE, csv_filename = "model_agg_violations.csv")
-check_model_agg_crossover <- function(data, print_results = TRUE, write_csv = FALSE, csv_filename = "model_agg_violations.csv") {
-    violations <- data |>
+#' crossover_results <- check_model_agg_crossover(aim)
+check_model_agg_crossover <- function(data) {
+    category <- asset_category <- type <- model_agg <- violates_rule <- NULL
+
+    results_all <- data |>
         dplyr::filter(category == "Risk-Based", asset_category == "Equity") |>
         dplyr::filter(type %in% c("Multifactor Series", "Market Series", "Income Series")) |>
         dplyr::mutate(
@@ -30,24 +26,14 @@ check_model_agg_crossover <- function(data, print_results = TRUE, write_csv = FA
                 .default = FALSE
             )
         ) |>
-        dplyr::filter(violates_rule == TRUE) |>
         dplyr::distinct()
 
-    if (print_results) {
-        if (nrow(violations) > 0) {
-            cat("Found", nrow(violations), "model_agg crossover violations:\n")
-            print(violations)
-        } else {
-            cat("No model_agg crossover violations found.\n")
-        }
-    }
+    results_pass <- results_all |> dplyr::filter(violates_rule == FALSE)
+    results_fail <- results_all |> dplyr::filter(violates_rule == TRUE)
 
-    if (write_csv) {
-        readr::write_csv(violations, csv_filename)
-        if (print_results) {
-            cat("Results written to:", csv_filename, "\n")
-        }
-    }
-
-    return(violations)
+    return(list(
+        results_all = results_all,
+        results_pass = results_pass,
+        results_fail = results_fail
+    ))
 }

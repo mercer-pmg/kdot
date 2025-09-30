@@ -2,12 +2,8 @@
 #'
 #' @param data cleaned orion platform tibble
 #' @param threshold distance threshold for duplicates (default: 0)
-#' @param round decimal places to round weights (default: 6)
-#' @param print_csv write CSV file (default: TRUE)
-#' @param print_results print results to console (default: TRUE)
-#' @param granularity analysis level: "model_agg" or "ticker" (default: "model_agg")
 #'
-#' @return tibble with duplicate strategy information
+#' @return list with three components: results_all, results_pass, results_fail
 #' @export
 #'
 #' @examples
@@ -17,52 +13,25 @@
 #' # Find exact duplicates (default)
 #' exact_duplicates <- find_duplicate_strategies(aim)
 #'
-#' # Find near duplicates with ticker-level analysis
-#' near_duplicates <- find_duplicate_strategies(aim, threshold = 2, granularity = "ticker")
+#' # Find near duplicates with threshold
+#' near_duplicates <- find_duplicate_strategies(aim, threshold = 2)
 #'
-find_duplicate_strategies <- function(data, threshold = 0, round = 6, print_csv = TRUE, print_results = TRUE, granularity = "model_agg") {
-  strategy <- ticker <- model_agg <- agg_target <- target <- ticker_weight <- total_weight <- NULL
-  strategy_1 <- strategy_2 <- position <- NULL
+find_duplicate_strategies <- function(data, threshold = 0) {
+  strategy <- model_agg <- agg_target <- total_weight <- NULL
+  strategy_1 <- strategy_2 <- position <- is_duplicate <- NULL
 
-  if (!granularity %in% c("ticker", "model_agg")) {
-    stop("granularity must be either 'ticker' or 'model_agg'")
-  }
-
-  if (granularity == "model_agg") {
-    # Model aggregation level
-    matrix <- data |>
-      dplyr::mutate(agg_target = ifelse(is.na(agg_target), 0, round(agg_target, round))) |>
-      dplyr::group_by(strategy, model_agg) |>
-      dplyr::summarise(total_weight = dplyr::first(agg_target), .groups = "drop") |>
-      tidyr::pivot_wider(
-        names_from = model_agg,
-        values_from = total_weight,
-        values_fill = 0
-      ) |>
-      tibble::column_to_rownames("strategy") |>
-      as.matrix()
-  } else {
-    # Ticker level
-    matrix <- data |>
-      dplyr::mutate(
-        agg_target = ifelse(is.na(agg_target), 0, agg_target) / 100,
-        target = target / 100,
-        ticker_weight = round(agg_target * target, round)
-      ) |>
-      dplyr::group_by(strategy, ticker) |>
-      dplyr::summarise(total_weight = sum(ticker_weight), .groups = "drop") |>
-      tidyr::pivot_wider(
-        names_from = ticker,
-        values_from = total_weight,
-        values_fill = 0
-      ) |>
-      tibble::column_to_rownames("strategy") |>
-      as.matrix()
-  }
-
-  if (print_results) {
-    cat("Running duplicate analysis with threshold:", threshold, "\n")
-  }
+  # Model aggregation level
+  matrix <- data |>
+    dplyr::mutate(agg_target = ifelse(is.na(agg_target), 0, round(agg_target, 6))) |>
+    dplyr::group_by(strategy, model_agg) |>
+    dplyr::summarise(total_weight = dplyr::first(agg_target), .groups = "drop") |>
+    tidyr::pivot_wider(
+      names_from = model_agg,
+      values_from = total_weight,
+      values_fill = 0
+    ) |>
+    tibble::column_to_rownames("strategy") |>
+    as.matrix()
 
   # Calc euclidean distance to determine similarity
   distance_matrix <- dist(matrix, method = "euclidean") |> as.matrix()
@@ -75,11 +44,21 @@ find_duplicate_strategies <- function(data, threshold = 0, round = 6, print_csv 
     arr.ind = TRUE
   )
 
+  # Get all unique strategies
+  all_strategies <- rownames(matrix)
+
   if (nrow(duplicates) == 0) {
-    if (print_results) {
-      cat("No duplicate strategies found with threshold:", threshold, "\n")
-    }
-    return(tibble::tibble()) # Return empty tibble
+    # No duplicates found - all strategies pass
+    results_all <- tibble::tibble(
+      strategy = all_strategies,
+      is_duplicate = FALSE
+    )
+
+    return(list(
+      results_all = results_all,
+      results_pass = results_all,
+      results_fail = tibble::tibble()
+    ))
   }
 
   duplicates_summary <- data.frame(
@@ -90,18 +69,19 @@ find_duplicate_strategies <- function(data, threshold = 0, round = 6, print_csv 
     threshold_used = threshold
   )
 
-  # Get unique strategies and filter matrix to non-zero columns
-  unique_strategies <- unique(
+  # Get unique duplicate strategies
+  duplicate_strategies <- unique(
     c(duplicates_summary$strategy_1, duplicates_summary$strategy_2)
   )
 
+  # Filter matrix to non-zero columns for duplicates
   duplicates_matrix <- matrix[
-    unique_strategies,
-    colSums(matrix[unique_strategies, , drop = FALSE]) > 0,
+    duplicate_strategies,
+    colSums(matrix[duplicate_strategies, , drop = FALSE]) > 0,
     drop = FALSE
   ]
 
-  duplicates_detailed <- duplicates_summary |>
+  results_fail <- duplicates_summary |>
     tidyr::pivot_longer(
       cols = c(strategy_1, strategy_2),
       names_to = "position",
@@ -113,30 +93,21 @@ find_duplicate_strategies <- function(data, threshold = 0, round = 6, print_csv 
         as.data.frame() |>
         tibble::rownames_to_column("strategy"),
       by = "strategy"
-    )
-
-  # Arrange the output by distance (smallest to largest), then by pair_id
-  duplicates_detailed <- duplicates_detailed |>
+    ) |>
     dplyr::arrange(distance, pair_id)
 
-  if (print_results) {
-    cat("Found", nrow(duplicates_summary), "pairs\n")
-  }
+  # Create results_all with is_duplicate column
+  results_all <- tibble::tibble(
+    strategy = all_strategies,
+    is_duplicate = strategy %in% duplicate_strategies
+  )
 
-  if (print_csv) {
-    output_filename <- paste0(
-      "duplicates_threshold_",
-      gsub("\\.", "_", threshold),
-      "_granularity_",
-      granularity,
-      ".csv"
-    )
+  # Create results_pass (non-duplicates)
+  results_pass <- results_all |> dplyr::filter(is_duplicate == FALSE)
 
-    readr::write_csv(duplicates_detailed, output_filename)
-    if (print_results) {
-      cat("Results saved to:", output_filename, "\n")
-    }
-  }
-
-  return(duplicates_detailed)
+  return(list(
+    results_all = results_all,
+    results_pass = results_pass,
+    results_fail = results_fail
+  ))
 }
