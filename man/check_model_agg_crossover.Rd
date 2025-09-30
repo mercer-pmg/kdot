@@ -4,24 +4,13 @@
 \alias{check_model_agg_crossover}
 \title{Check for model_agg crossovers between different RB series'}
 \usage{
-check_model_agg_crossover(
-  data,
-  print_results = TRUE,
-  write_csv = FALSE,
-  csv_filename = "model_agg_violations.csv"
-)
+check_model_agg_crossover(data)
 }
 \arguments{
 \item{data}{cleaned orion platform tibble}
-
-\item{print_results}{print results to console}
-
-\item{write_csv}{write results to CSV file}
-
-\item{csv_filename}{CSV output filename}
 }
 \value{
-A data frame containing strategies that violate model_agg crossover rules.
+list with three components: results_all, results_pass, results_fail
 }
 \description{
 Check for model_agg crossovers between different RB series'
@@ -32,8 +21,5 @@ aim <- readr::read_csv("Orion Platform - XXXX.XX.csv") |>
     clean_orion_platform()
 
 # Check for violations
-violations <- check_model_agg_crossover(aim)
-
-# Check and save results to CSV
-violations <- check_model_agg_crossover(aim, write_csv = TRUE, csv_filename = "model_agg_violations.csv")
+crossover_results <- check_model_agg_crossover(aim)
 }

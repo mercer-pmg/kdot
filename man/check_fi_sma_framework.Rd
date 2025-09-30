@@ -12,7 +12,7 @@ check_fi_sma_framework(data, test_error_injection = FALSE)
 \item{test_error_injection}{inject test errors for validation (default: FALSE)}
 }
 \value{
-list containing allocation_check, strategies_pass, and strategies_fail
+list with three components: results_all, results_pass, results_fail
 }
 \description{
 Check Fixed Income SMA Framework

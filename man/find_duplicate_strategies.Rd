@@ -4,30 +4,15 @@
 \alias{find_duplicate_strategies}
 \title{Find Duplicate Strategies}
 \usage{
-find_duplicate_strategies(
-  data,
-  threshold = 0,
-  round = 6,
-  print_csv = TRUE,
-  print_results = TRUE,
-  granularity = "model_agg"
-)
+find_duplicate_strategies(data, threshold = 0)
 }
 \arguments{
 \item{data}{cleaned orion platform tibble}
 
 \item{threshold}{distance threshold for duplicates (default: 0)}
-
-\item{round}{decimal places to round weights (default: 6)}
-
-\item{print_csv}{write CSV file (default: TRUE)}
-
-\item{print_results}{print results to console (default: TRUE)}
-
-\item{granularity}{analysis level: "model_agg" or "ticker" (default: "model_agg")}
 }
 \value{
-tibble with duplicate strategy information
+list with three components: results_all, results_pass, results_fail
 }
 \description{
 Find Duplicate Strategies
@@ -39,7 +24,7 @@ aim <- readr::read_csv("Orion Platform - XXXX.XX.csv")
 # Find exact duplicates (default)
 exact_duplicates <- find_duplicate_strategies(aim)
 
-# Find near duplicates with ticker-level analysis
-near_duplicates <- find_duplicate_strategies(aim, threshold = 2, granularity = "ticker")
+# Find near duplicates with threshold
+near_duplicates <- find_duplicate_strategies(aim, threshold = 2)
 
 }

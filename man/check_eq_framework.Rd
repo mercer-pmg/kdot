@@ -4,17 +4,15 @@
 \alias{check_eq_framework}
 \title{Check Equity Framework}
 \usage{
-check_eq_framework(data, write_excel = FALSE, exception_patterns = TRUE)
+check_eq_framework(data, exception_patterns = TRUE)
 }
 \arguments{
 \item{data}{cleaned orion platform tibble}
 
-\item{write_excel}{write results to Excel file (default: FALSE)}
-
 \item{exception_patterns}{apply exception filters: "(ETF, exCore)|(ERISA)|(ETF, Sustainable)|(MF, Social)"}
 }
 \value{
-list with allocation_check, strategies_pass, and strategies_fail tibbles
+list with three components: results_all, results_pass, results_fail
 }
 \description{
 Check Equity Framework
@@ -24,5 +22,5 @@ Check Equity Framework
 aim <- readr::read_csv("Orion Platform - XXXX.XX.csv") |> clean_orion_platform()
 
 # Check framework compliance with MA approved exceptions
-eq_results <- check_eq_framework(aim, write_excel = TRUE, exception_patterns = TRUE)
+eq_results <- check_eq_framework(aim, exception_patterns = TRUE)
 }
