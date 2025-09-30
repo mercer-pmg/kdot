@@ -1,19 +1,16 @@
-#' Check Fixed Income SMA Framework Compliance
+#' Check Fixed Income SMA Framework
 #'
-#' @param data Data frame containing strategy allocation data with columns: strategy, type, asset_category, model_agg, model_series, agg_target, is_SMA
-#' @param test_error_injection Logical. If TRUE, injects test errors for validation (default: FALSE)
+#' @param data cleaned orion platform tibble
+#' @param test_error_injection inject test errors for validation (default: FALSE)
 #'
-#' @return A list containing:
-#'   - allocation_check: Full allocation check results
-#'   - strategies_pass: Strategies that pass the framework
-#'   - strategies_fail: Strategies that fail the framework
+#' @return list containing allocation_check, strategies_pass, and strategies_fail
 #' @export
 #'
 #' @examples
 #' # Load sample data
 #' aim <- readr::read_csv("Orion Platform - XXXX.XX.csv") |> clean_orion_platform()
 #'
-#' # Check framework compliance (default behavior)
+#' # Check framework
 #' fi_results <- check_fi_sma_framework(aim)
 #'
 #' # Test with error injection
@@ -24,18 +21,14 @@ check_fi_sma_framework <- function(data, test_error_injection = FALSE) {
     fi_total_allocation <- expected_sma_pct <- expected_non_sma_pct <- actual_sma_pct <- NULL
     actual_non_sma_pct <- sma_target_met <- non_sma_target_met <- fixed_income_allocation <- NULL
 
-    # Apply test error injection if requested
     if (test_error_injection) {
-        data <- data |>
-            dplyr::mutate(
-                agg_target = dplyr::case_when(
-                    strategy == "Multifactor 70 TM (ETF,QUSALVMQ,QIDMVMQ,N7YMUN)" &
-                        model_agg == "Nuveen Municipal Ladder 1-7 Year" ~ 30,
-                    strategy == "Multifactor 70 TM (ETF,QUSALVMQ,QIDMVMQ,N7YMUN)" &
-                        model_agg == "MA Fixed Income TM (ETF)" ~ 0,
-                    TRUE ~ agg_target
-                )
+        data <- dplyr::mutate(data,
+            agg_target = dplyr::case_when(
+                strategy == "Multifactor 70 TM (ETF,QUSALVMQ,QIDMVMQ,N7YMUN)" & model_agg == "Nuveen Municipal Ladder 1-7 Year" ~ 30,
+                strategy == "Multifactor 70 TM (ETF,QUSALVMQ,QIDMVMQ,N7YMUN)" & model_agg == "MA Fixed Income TM (ETF)" ~ 0,
+                TRUE ~ agg_target
             )
+        )
     }
 
     # Filter to strategies with SMA

@@ -18,7 +18,7 @@
 #' exact_duplicates <- find_duplicate_strategies(aim)
 #'
 #' # Find near duplicates with ticker-level analysis
-#' near_duplicates <- find_duplicate_strategies(aim, threshold = 0.005, granularity = "ticker")
+#' near_duplicates <- find_duplicate_strategies(aim, threshold = 2, granularity = "ticker")
 #'
 find_duplicate_strategies <- function(data, threshold = 0, round = 6, print_csv = TRUE, print_results = TRUE, granularity = "model_agg") {
   strategy <- ticker <- model_agg <- agg_target <- target <- ticker_weight <- total_weight <- NULL
