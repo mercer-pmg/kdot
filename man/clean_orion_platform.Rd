@@ -4,13 +4,15 @@
 \alias{clean_orion_platform}
 \title{Clean and Categorize Orion Platform Data}
 \usage{
-clean_orion_platform(data)
+clean_orion_platform(data, drop_columns = NULL)
 }
 \arguments{
 \item{data}{Orion Platform XXXX-XX.csv}
+
+\item{drop_columns}{Character vector of column names to drop from the result (default: NULL)}
 }
 \value{
-A tibble with added columns: 'category', 'model_series', 'asset_category', 'market_cap', and 'is_SMA'.
+A tibble with added columns: 'category', 'model_group', 'asset_category', 'market_cap', and 'is_SMA'.
 }
 \description{
 Clean and Categorize Orion Platform Data
