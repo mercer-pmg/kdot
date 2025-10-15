@@ -15,7 +15,7 @@
 #' audit_results <- run_aim_audit(aim, duplicate_threshold = 2)
 run_aim_audit <- function(data, duplicate_threshold = 0, exception_patterns = TRUE, test_error_injection = FALSE, verbose = TRUE) {
     # Run audits
-    duplicate_results <- kdot::find_duplicate_strategies(data = data, threshold = duplicate_threshold)
+    duplicate_results <- kdot::check_duplicate_strategies(data = data, threshold = duplicate_threshold)
     eq_results <- kdot::check_eq_framework(data = data, exception_patterns = exception_patterns)
     fi_results <- kdot::check_fi_sma_framework(data = data, test_error_injection = test_error_injection)
     crossover_results <- kdot::check_model_agg_crossover(data = data)

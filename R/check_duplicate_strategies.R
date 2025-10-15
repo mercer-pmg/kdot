@@ -1,4 +1,4 @@
-#' Find Duplicate Strategies
+#' Check for Duplicate Strategies
 #'
 #' @param data cleaned orion platform tibble
 #' @param threshold distance threshold for duplicates (default: 0)
@@ -11,12 +11,12 @@
 #' aim <- readr::read_csv("Orion Platform - XXXX.XX.csv")
 #'
 #' # Find exact duplicates (default)
-#' exact_duplicates <- find_duplicate_strategies(aim)
+#' exact_duplicates <- check_duplicate_strategies(aim)
 #'
 #' # Find near duplicates with threshold
-#' near_duplicates <- find_duplicate_strategies(aim, threshold = 2)
+#' near_duplicates <- check_duplicate_strategies(aim, threshold = 2)
 #'
-find_duplicate_strategies <- function(data, threshold = 0) {
+check_duplicate_strategies <- function(data, threshold = 0) {
   strategy <- model_agg <- agg_target <- total_weight <- NULL
   strategy_1 <- strategy_2 <- position <- is_duplicate <- NULL
 
