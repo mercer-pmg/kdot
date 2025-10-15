@@ -2,7 +2,7 @@
 #'
 #' @param data Orion Platform XXXX-XX.csv
 #'
-#' @return A tibble with added columns: 'category', 'model_series', 'asset_category', 'market_cap', and 'is_SMA'.
+#' @return A tibble with added columns: 'category', 'model_group', 'asset_category', 'market_cap', and 'is_SMA'.
 #' @export
 #'
 clean_orion_platform <- function(data) {
@@ -25,7 +25,7 @@ clean_orion_platform <- function(data) {
         ) ~ "Asset Class",
         .default = NA_character_
       ),
-      model_series = dplyr::case_when(
+      model_group = dplyr::case_when(
         stringr::str_detect(model_agg, "MA Market") ~ "Market Series",
         stringr::str_detect(model_agg, "MA Multifactor") ~ "Multifactor Series",
         stringr::str_detect(model_agg, "MA Income") ~ "Income Series",
@@ -37,9 +37,9 @@ clean_orion_platform <- function(data) {
         .default = "Other"
       ),
       asset_category = dplyr::case_when(
-        stringr::str_detect(model_series, "Series|Quant") ~ "Equity",
-        stringr::str_detect(model_series, "Fixed Income") ~ "Fixed Income",
-        stringr::str_detect(model_series, "Other") ~ "Other",
+        stringr::str_detect(model_group, "Series|Quant") ~ "Equity",
+        stringr::str_detect(model_group, "Fixed Income") ~ "Fixed Income",
+        stringr::str_detect(model_group, "Other") ~ "Other",
         .default = NA_character_
       ),
       market_cap = dplyr::case_when(
@@ -49,7 +49,7 @@ clean_orion_platform <- function(data) {
         stringr::str_detect(model_agg, "\\bMid Cap\\b") ~ "US Mid Cap",
         .default = "Other"
       ),
-      is_SMA = stringr::str_detect(model_series, "SMA")
+      is_SMA = stringr::str_detect(model_group, "SMA")
     )
 
   return(categorized_data)

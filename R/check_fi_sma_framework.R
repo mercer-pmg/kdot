@@ -16,7 +16,7 @@
 #' # Test with error injection
 #' fi_results <- check_fi_sma_framework(aim, test_error_injection = TRUE)
 check_fi_sma_framework <- function(data, test_error_injection = FALSE) {
-    strategy <- type <- asset_category <- model_agg <- model_series <- agg_target <- is_SMA <- NULL
+    strategy <- type <- asset_category <- model_agg <- model_group <- agg_target <- is_SMA <- NULL
     has_sma <- model_agg_allocation <- is_sma_group <- sma_allocation <- non_sma_allocation <- NULL
     fi_total_allocation <- expected_sma_pct <- expected_non_sma_pct <- actual_sma_pct <- NULL
     actual_non_sma_pct <- sma_target_met <- non_sma_target_met <- fixed_income_allocation <- NULL
@@ -43,7 +43,7 @@ check_fi_sma_framework <- function(data, test_error_injection = FALSE) {
     fi_model_agg_summary <- sma_strategies |>
         dplyr::filter(type %in% c("Market Series", "Multifactor Series", "Income Series")) |>
         dplyr::filter(asset_category == "Fixed Income") |>
-        dplyr::group_by(strategy, type, model_agg, model_series) |>
+        dplyr::group_by(strategy, type, model_agg, model_group) |>
         dplyr::summarise(
             model_agg_allocation = {
                 val <- dplyr::first(agg_target)
