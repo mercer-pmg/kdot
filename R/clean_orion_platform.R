@@ -1,11 +1,12 @@
 #' Clean and Categorize Orion Platform Data
 #'
 #' @param data Orion Platform XXXX-XX.csv
+#' @param drop_columns Character vector of column names to drop from the result (default: NULL)
 #'
 #' @return A tibble with added columns: 'category', 'model_group', 'asset_category', 'market_cap', and 'is_SMA'.
 #' @export
 #'
-clean_orion_platform <- function(data) {
+clean_orion_platform <- function(data, drop_columns = NULL) {
   required_cols <- c("type", "model_agg")
   missing_cols <- setdiff(required_cols, names(data))
 
@@ -51,6 +52,12 @@ clean_orion_platform <- function(data) {
       ),
       is_SMA = stringr::str_detect(model_group, "SMA")
     )
+
+  # Drop specified columns if provided
+  if (!is.null(drop_columns)) {
+    categorized_data <- categorized_data |>
+      dplyr::select(-dplyr::any_of(drop_columns))
+  }
 
   return(categorized_data)
 }
