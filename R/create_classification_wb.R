@@ -1,8 +1,8 @@
 #' Create a classification workbook to audit Orion products.
 #'
-#' @param all_local an XLSX exported from Orion Local Products page.
+#' @param all_local a CSV exported from the Orion Local Products page or transformed Orion Query 10635.
 #'
-#' @returns a list
+#' @returns an XLSX workbook
 #' @export
 #'
 #'
