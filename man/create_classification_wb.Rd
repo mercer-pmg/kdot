@@ -4,10 +4,12 @@
 \alias{create_classification_wb}
 \title{Create a classification workbook to audit Orion products.}
 \usage{
-create_classification_wb(all_local)
+create_classification_wb(all_local, include_predictions = TRUE)
 }
 \arguments{
 \item{all_local}{a CSV exported from the Orion Local Products page or transformed Orion Query 10635.}
+
+\item{include_predictions}{logical, whether to include prediction columns. Defaults to TRUE.}
 }
 \value{
 an XLSX workbook
