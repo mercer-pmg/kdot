@@ -144,6 +144,9 @@ create_classification_wb <- function(all_local, include_predictions = TRUE) {
   dat <- dat |> purrr::map(as.data.frame)
   names(dat) <- keys
 
+  # Sort dat to match keys_n order to ensure styling is applied to correct sheets
+  dat <- dat[keys_n$`Product Sub Type Name`]
+
 
 
   # Add Segment column to Mutual Fund table
