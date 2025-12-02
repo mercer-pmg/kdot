@@ -7,23 +7,12 @@
 #' @export
 #'
 clean_orion_platform <- function(data, drop_columns = NULL) {
-  required_cols <- c("type", "model_agg")
-  missing_cols <- setdiff(required_cols, names(data))
-
-  if (length(missing_cols) > 0) {
-    stop("Missing required columns: ", paste(missing_cols, collapse = ", "))
-  }
-
   categorized_data <- data |>
     dplyr::mutate(
-      category = dplyr::case_match(
-        type,
-        "Blended Strategy" ~ "Blended",
-        c("Market Series", "Multifactor Series", "Income Series") ~ "Risk-Based",
-        c(
-          "Equity Strategies", "Fixed Income Strategies", "Cash Strategies",
-          "Alternative Strategies", "Special Situation Strategies"
-        ) ~ "Asset Class",
+      category = dplyr::case_when(
+        type == "Blended Strategy" ~ "Blended",
+        type %in% c("Market Series", "Multifactor Series", "Income Series") ~ "Risk-Based",
+        stringr::str_detect(type, "Strategies") ~ "Asset Class",
         .default = NA_character_
       ),
       model_group = dplyr::case_when(
@@ -35,11 +24,16 @@ clean_orion_platform <- function(data, drop_columns = NULL) {
         stringr::str_detect(model_agg, "MA Fixed Income") ~ "Fixed Income",
         stringr::str_detect(model_agg, "Ladder \\(ETF\\)$") ~ "Fixed Income ETF Ladder",
         stringr::str_detect(model_agg, "BlackRock|Nuveen|PIMCO") ~ "Third-Party Fixed Income SMA",
+        stringr::str_detect(model_agg, "Interval") ~ "Interval Funds",
+        stringr::str_detect(model_agg, "Options") ~ "Options",
         .default = "Other"
       ),
       asset_category = dplyr::case_when(
-        stringr::str_detect(model_group, "Series|Quant") ~ "Equity",
+        stringr::str_detect(model_group, "Options|Interval Funds") ~ "Alternatives",
+        stringr::str_detect(model_group, "Cash") ~ "Cash",
+        stringr::str_detect(model_group, "Ladder") ~ "Fixed Income",
         stringr::str_detect(model_group, "Fixed Income") ~ "Fixed Income",
+        stringr::str_detect(model_group, "Series|Quant") ~ "Equity",
         stringr::str_detect(model_group, "Other") ~ "Other",
         .default = NA_character_
       ),
