@@ -7,7 +7,6 @@
 #'
 #'
 orion_product_import <- function(sheet_with_assignments) {
-
   `ADV Asset Category` <- `Annual Income Rate` <- `Asset Class ID` <-
     `Assigned Asset Class` <- CUSIP <- Color <- `Federally Taxable` <-
     `Has Fees` <- `Is 13F Reportable` <- `Is ADV Reportable` <-
@@ -19,22 +18,24 @@ orion_product_import <- function(sheet_with_assignments) {
   framework <- product_classification_framework
 
   sheet_names <- openxlsx::getSheetNames(sheet_with_assignments)
-  bad_names   <- c("__FDSCACHE__","Asset Classes", "Status")
+  bad_names <- c("__FDSCACHE__", "Asset Classes", "Status")
   sheet_names <- sheet_names[!sheet_names %in% bad_names]
 
-  get_assignments <- function(sheet_name){
-
+  get_assignments <- function(sheet_name) {
     print(sheet_name)
 
     dat <- openxlsx::read.xlsx(
       xlsxFile  = sheet_with_assignments,
       sheet     = sheet_name,
-      sep.names = " ") |>
+      sep.names = " "
+    ) |>
       dplyr::select(`Product ID`, CUSIP, `Assigned Asset Class`) |>
-      dplyr::mutate(`Assigned Asset Class` = as.character(`Assigned Asset Class`))
+      dplyr::mutate(
+        CUSIP = as.character(CUSIP),
+        `Assigned Asset Class` = as.character(`Assigned Asset Class`)
+      )
 
     return(dat)
-
   }
 
   upload <- sheet_names |> purrr::map_df(get_assignments)
@@ -47,7 +48,8 @@ orion_product_import <- function(sheet_with_assignments) {
   upload <- dplyr::left_join(
     x  = upload,
     y  = framework,
-    by = "Asset Class")
+    by = "Asset Class"
+  )
 
   upload <- upload |>
     dplyr::select(`Product ID`, `Risk Category ID`, `Asset Class ID`)
@@ -70,7 +72,8 @@ orion_product_import <- function(sheet_with_assignments) {
       `ADV Asset Category`     = NA,
       `Is ADV Reportable`      = NA,
       `Is 13F Reportable`      = NA,
-      `Has Fees`               = NA)
+      `Has Fees`               = NA
+    )
 
   upload <- upload |>
     dplyr::select(
@@ -93,9 +96,8 @@ orion_product_import <- function(sheet_with_assignments) {
       `ADV Asset Category`,
       `Is ADV Reportable`,
       `Is 13F Reportable`,
-      `Has Fees`)
+      `Has Fees`
+    )
 
   return(upload)
-
-
 }
