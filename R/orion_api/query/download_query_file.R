@@ -32,7 +32,7 @@ download_query_file <- function(location_url, format = "csv", token) {
             "Accept" = "*/*"
         ) |>
         httr2::req_progress() |>
-        httr2::req_timeout(QUERY_GENERATION_TIMEOUT)
+        httr2::req_timeout(1200L) # 20 minutes for query generation
 
     resp <- httr2::req_perform(req)
     status_code <- httr2::resp_status(resp)

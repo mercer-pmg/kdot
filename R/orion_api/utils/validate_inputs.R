@@ -16,7 +16,7 @@
 #'   \item \code{token}: Validated token (if valid)
 #' }
 #'
-#' @keywords internal
+#' @export
 validate_inputs <- function(account_id, token, account_id_label = "Account ID") {
     if (is.null(account_id) || length(account_id) == 0) {
         return(list(valid = FALSE, error = paste(account_id_label, "cannot be NULL or empty")))

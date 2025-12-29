@@ -11,7 +11,7 @@
 #' @param params Query parameters (for GET requests)
 #' @param json_data JSON data to send in request body (for POST, PUT, PATCH)
 #' @param simplify_vector Logical indicating whether to simplify JSON vectors (default: TRUE)
-#' @param timeout Request timeout in seconds (default: uses TIMEOUT constant)
+#' @param timeout Request timeout in seconds (default: 30 seconds)
 #'
 #' @return A standardized result list with parsed data or error message
 #'

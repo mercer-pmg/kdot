@@ -10,7 +10,7 @@
 #' @param params Query parameters (for GET requests)
 #' @param token API authentication token
 #' @param error_context Character string describing the context for error messages
-#' @param timeout Request timeout in seconds (default: uses TIMEOUT constant)
+#' @param timeout Request timeout in seconds (default: 30 seconds)
 #'
 #' @return A list with:
 #' \itemize{
@@ -35,13 +35,13 @@ orion_request <- function(method, endpoint, json_data = NULL, params = NULL, tok
     }
 
     # Use provided timeout or default
-    request_timeout <- if (!is.null(timeout)) timeout else TIMEOUT
+    request_timeout <- if (!is.null(timeout)) timeout else 30L
 
-    url <- paste0(BASE_URL, endpoint)
+    url <- paste0("https://api.orionadvisor.com", endpoint)
     attempt <- 0
     last_error <- NULL
 
-    while (attempt <= MAX_RETRIES) {
+    while (attempt <= 3L) {
         result <- tryCatch(
             {
                 # Build request using httr2
@@ -52,7 +52,7 @@ orion_request <- function(method, endpoint, json_data = NULL, params = NULL, tok
                         "Accept" = "application/json",
                         "Content-Type" = "application/json"
                     ) |>
-                    httr2::req_options(ssl_verifypeer = VERIFY_SSL) |>
+                    httr2::req_options(ssl_verifypeer = FALSE) |>
                     httr2::req_timeout(request_timeout)
 
                 # Add query parameters for GET requests
@@ -70,12 +70,12 @@ orion_request <- function(method, endpoint, json_data = NULL, params = NULL, tok
                 status_code <- httr2::resp_status(response)
 
                 # Handle rate limiting (429 Too Many Requests)
-                if (status_code == 429 && attempt < MAX_RETRIES) {
+                if (status_code == 429 && attempt < 3L) {
                     retry_after <- httr2::resp_header(response, "Retry-After")
                     delay <- if (!is.null(retry_after)) {
                         as.numeric(retry_after)
                     } else {
-                        RETRY_DELAY * (2^attempt) # Exponential backoff
+                        1.0 * (2^attempt) # Exponential backoff
                     }
                     Sys.sleep(delay)
                     attempt <<- attempt + 1
@@ -83,8 +83,8 @@ orion_request <- function(method, endpoint, json_data = NULL, params = NULL, tok
                 }
 
                 # Handle server errors (5xx) with retry
-                if (status_code >= 500 && status_code < 600 && attempt < MAX_RETRIES) {
-                    delay <- RETRY_DELAY * (2^attempt) # Exponential backoff
+                if (status_code >= 500 && status_code < 600 && attempt < 3L) {
+                    delay <- 1.0 * (2^attempt) # Exponential backoff
                     Sys.sleep(delay)
                     attempt <<- attempt + 1
                     return(NULL) # Signal to continue loop
@@ -107,8 +107,8 @@ orion_request <- function(method, endpoint, json_data = NULL, params = NULL, tok
             error = function(e) {
                 last_error <<- e
                 # Retry on network errors
-                if (attempt < MAX_RETRIES) {
-                    delay <- RETRY_DELAY * (2^attempt)
+                if (attempt < 3L) {
+                    delay <- 1.0 * (2^attempt)
                     Sys.sleep(delay)
                     attempt <<- attempt + 1
                     return(NULL) # Signal to continue loop
@@ -132,7 +132,7 @@ orion_request <- function(method, endpoint, json_data = NULL, params = NULL, tok
     if (!is.null(last_error)) {
         return(list(
             success = FALSE,
-            error = paste("Network Error: Failed after", MAX_RETRIES, "retries:", last_error$message),
+            error = paste("Network Error: Failed after", 3L, "retries:", last_error$message),
             status_code = NULL
         ))
     }

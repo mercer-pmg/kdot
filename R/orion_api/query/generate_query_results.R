@@ -44,7 +44,7 @@ generate_query_results <- function(query_payload, format = "csv", token = NULL) 
         json_data = query_payload,
         token = token,
         error_context = paste("Generating query results for Query", query_payload$id, "in", format, "format"),
-        timeout = QUERY_GENERATION_TIMEOUT
+        timeout = 1200L # 20 minutes for query generation
     )
 
     if (!result$success) {
