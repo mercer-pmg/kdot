@@ -147,7 +147,38 @@ create_classification_wb <- function(all_local, include_predictions = TRUE) {
   # Sort dat to match keys_n order to ensure styling is applied to correct sheets
   dat <- dat[keys_n$`Product Sub Type Name`]
 
-
+  # Autofill Assigned Asset Class for specific product types
+  print("Autofilling Assigned Asset Class for specific product types...")
+  if ("Corporate Bond" %in% names(dat)) {
+    dat[["Corporate Bond"]] <- dat[["Corporate Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Corporate Bond")
+    print("  - Corporate Bond: autofilled with 'Corporate Bond'")
+  }
+  if ("Municipal Bond" %in% names(dat)) {
+    dat[["Municipal Bond"]] <- dat[["Municipal Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "State-Specific Muni Bond")
+    print("  - Municipal Bond: autofilled with 'State-Specific Muni Bond'")
+  }
+  if ("Call" %in% names(dat)) {
+    dat[["Call"]] <- dat[["Call"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Options-Trading")
+    print("  - Call: autofilled with 'Options-Trading'")
+  }
+  if ("Put" %in% names(dat)) {
+    dat[["Put"]] <- dat[["Put"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Options-Trading")
+    print("  - Put: autofilled with 'Options-Trading'")
+  }
+  if ("CD" %in% names(dat)) {
+    dat[["CD"]] <- dat[["CD"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Certificate of Deposit")
+    print("  - CD: autofilled with 'Certificate of Deposit'")
+  }
+  if ("Treasury Bond" %in% names(dat)) {
+    dat[["Treasury Bond"]] <- dat[["Treasury Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Treasuries")
+    print("  - Treasury Bond: autofilled with 'Treasuries'")
+  }
 
   # Add Segment column to Mutual Fund table
   # if("Mutual Fund" %in% names(dat)) {
