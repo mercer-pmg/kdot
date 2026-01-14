@@ -45,15 +45,31 @@ orion_request <- function(method, endpoint, json_data = NULL, params = NULL, tok
         result <- tryCatch(
             {
                 # Build request using httr2
+                # Configure SSL certificate verification
+                cert_path <- Sys.getenv("CURL_CA_BUNDLE", unset = "C:\\Users\\AustinBurks\\github\\cacert.pem")
+                
                 req <- httr2::request(url) |>
                     httr2::req_method(method) |>
                     httr2::req_headers(
                         "Authorization" = paste("Bearer", token),
                         "Accept" = "application/json",
                         "Content-Type" = "application/json"
-                    ) |>
-                    httr2::req_options(ssl_verifypeer = FALSE) |>
-                    httr2::req_timeout(request_timeout)
+                    )
+                
+                # Add SSL certificate if file exists
+                if (file.exists(cert_path)) {
+                    req <- req |> httr2::req_options(cainfo = cert_path)
+                    # Debug: Log SSL certificate usage (can be removed in production)
+                    if (getOption("kdot.debug_ssl", default = FALSE)) {
+                        cat("[SSL DEBUG] Using certificate bundle:", cert_path, "\n")
+                    }
+                } else {
+                    # Warn if certificate file is missing
+                    warning("SSL certificate file not found at: ", cert_path, 
+                           ". SSL verification may fail.")
+                }
+                
+                req <- req |> httr2::req_timeout(request_timeout)
 
                 # Add query parameters for GET requests
                 if (!is.null(params) && method == "GET") {

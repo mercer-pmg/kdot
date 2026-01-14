@@ -25,12 +25,22 @@
 #' results <- download_query_file(location_url, format = "csv", token = token)
 #' }
 download_query_file <- function(location_url, format = "csv", token) {
+    # Configure SSL certificate verification
+    cert_path <- Sys.getenv("CURL_CA_BUNDLE", unset = "C:\\Users\\AustinBurks\\github\\cacert.pem")
+    
     # Build request with longer timeout for file downloads
     req <- httr2::request(location_url) |>
         httr2::req_headers(
             "Authorization" = paste("Bearer", token),
             "Accept" = "*/*"
-        ) |>
+        )
+    
+    # Add SSL certificate if file exists
+    if (file.exists(cert_path)) {
+        req <- req |> httr2::req_options(cainfo = cert_path)
+    }
+    
+    req <- req |>
         httr2::req_progress() |>
         httr2::req_timeout(1200L) # 20 minutes for query generation
 
