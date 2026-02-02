@@ -189,6 +189,9 @@ create_classification_wb <- function(all_local, include_predictions = TRUE) {
   print("Creating workbook...")
   wb <- openxlsx::createWorkbook()
 
+  # Define sheets that are autofilled (mark with white tab color for easy identification)
+  autofilled_sheets <- c("Corporate Bond", "Municipal Bond", "Call", "Put", "CD", "Treasury Bond")
+
   # Add Status worksheet that shows the number of products that need
   # assignment by Product Sub Type Name
   print("Adding Status worksheet...")
@@ -199,9 +202,11 @@ create_classification_wb <- function(all_local, include_predictions = TRUE) {
   print("Creating worksheets for each product type...")
   if (length(dat) > 0) {
     for (i in 1:length(dat)) {
-      print(paste("  - Adding worksheet:", names(dat)[i], "with", nrow(dat[[i]]), "products"))
-      openxlsx::addWorksheet(wb, names(dat)[i])
-      openxlsx::writeDataTable(wb, names(dat)[i], dat[[i]])
+      sheet_name <- names(dat)[i]
+      tab_colour <- if (sheet_name %in% autofilled_sheets) "white" else NULL
+      print(paste("  - Adding worksheet:", sheet_name, "with", nrow(dat[[i]]), "products"))
+      openxlsx::addWorksheet(wb, sheet_name, tabColour = tab_colour)
+      openxlsx::writeDataTable(wb, sheet_name, dat[[i]])
     }
   }
 
