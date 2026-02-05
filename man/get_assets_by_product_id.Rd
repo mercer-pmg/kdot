@@ -4,17 +4,15 @@
 \alias{get_assets_by_product_id}
 \title{Get Assets by Product ID}
 \usage{
-get_assets_by_product_id(product_id, token, return_tibble = TRUE)
+get_assets_by_product_id(product_id, token)
 }
 \arguments{
 \item{product_id}{Single product ID or vector/list of product IDs}
 
 \item{token}{API authentication token}
-
-\item{return_tibble}{Logical indicating whether to return results as a tibble (default: TRUE)}
 }
 \value{
-A standardized result list with assets data (as tibble or list) or error message
+A standardized result list with assets data as a tibble
 }
 \description{
 Retrieves all assets (across all accounts) for one or more product IDs.
