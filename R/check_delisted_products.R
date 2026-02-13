@@ -9,12 +9,22 @@
 #'   Orion export (e.g. `take_export()$Ticker`).
 #' @param delisted_csv_path Path to the Bloomberg delisted assets CSV.
 #'
-#' @returns Character vector of product tickers that appear in the delisted
-#'   list. Empty vector means all clear (no matches).
+#' @returns A tibble with columns: cleaned_ticker, security_id (col 2 raw),
+#'   announced_date (col 3), effective_date (col 4), name (col 6 with
+#'   "Name: " stripped). Only rows where the product ticker matches a
+#'   delisted security. Empty tibble means all clear.
 #' @export
 #'
 #'
 check_delisted_products <- function(product_tickers, delisted_csv_path) {
+  empty_result <- tibble::tibble(
+    cleaned_ticker = character(),
+    security_id = character(),
+    announced_date = character(),
+    effective_date = character(),
+    name = character()
+  )
+
   delisted_raw <- readr::read_csv(
     delisted_csv_path,
     skip = 5,
@@ -22,16 +32,17 @@ check_delisted_products <- function(product_tickers, delisted_csv_path) {
     show_col_types = FALSE
   )
 
-  if (ncol(delisted_raw) < 2 || nrow(delisted_raw) == 0) {
-    return(character(0))
+  if (ncol(delisted_raw) < 6 || nrow(delisted_raw) == 0) {
+    return(empty_result)
   }
 
-  delisted_tickers <- delisted_raw[[2]] |>
-    as.character() |>
-    stringr::str_extract("^[^\\s]+") |>
-    trimws() |>
-    unique()
-  delisted_tickers <- delisted_tickers[!is.na(delisted_tickers) & delisted_tickers != ""]
+  delisted_df <- tibble::tibble(
+    cleaned_ticker = trimws(stringr::str_extract(as.character(delisted_raw[[2]]), "^[^\\s]+")),
+    security_id = as.character(delisted_raw[[2]]),
+    announced_date = as.character(delisted_raw[[3]]),
+    effective_date = as.character(delisted_raw[[4]]),
+    name = stringr::str_remove(as.character(delisted_raw[[6]]), "^Name:\\s*")
+  )
 
   product_tickers_norm <- product_tickers |>
     as.character() |>
@@ -39,5 +50,6 @@ check_delisted_products <- function(product_tickers, delisted_csv_path) {
     unique()
   product_tickers_norm <- product_tickers_norm[!is.na(product_tickers_norm) & product_tickers_norm != ""]
 
-  intersect(product_tickers_norm, delisted_tickers)
+  delisted_df |>
+    dplyr::filter(cleaned_ticker %in% product_tickers_norm)
 }

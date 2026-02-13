@@ -13,8 +13,10 @@ Orion export (e.g. \code{take_export()$Ticker}).}
 \item{delisted_csv_path}{Path to the Bloomberg delisted assets CSV.}
 }
 \value{
-Character vector of product tickers that appear in the delisted
-list. Empty vector means all clear (no matches).
+A tibble with columns: cleaned_ticker, security_id (col 2 raw),
+announced_date (col 3), effective_date (col 4), name (col 6 with
+"Name: " stripped). Only rows where the product ticker matches a
+delisted security. Empty tibble means all clear.
 }
 \description{
 Reads a Bloomberg delisted assets CSV (headers in row 4, data from row 6,
