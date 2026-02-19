@@ -179,6 +179,16 @@ create_classification_wb <- function(all_local, include_predictions = TRUE) {
       dplyr::mutate(`Assigned Asset Class` = "Treasuries")
     print("  - Treasury Bond: autofilled with 'Treasuries'")
   }
+  if ("Principal Paydown" %in% names(dat)) {
+    dat[["Principal Paydown"]] <- dat[["Principal Paydown"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Non-Traditional Bond")
+    print("  - Principal Paydown: autofilled with 'Non-Traditional Bond'")
+  }
+  if ("Called Bond" %in% names(dat)) {
+    dat[["Called Bond"]] <- dat[["Called Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Non-Traditional Bond")
+    print("  - Called Bond: autofilled with 'Non-Traditional Bond'")
+  }
 
   # Add Segment column to Mutual Fund table
   # if("Mutual Fund" %in% names(dat)) {
@@ -190,7 +200,7 @@ create_classification_wb <- function(all_local, include_predictions = TRUE) {
   wb <- openxlsx::createWorkbook()
 
   # Define sheets that are autofilled (mark with white tab color for easy identification)
-  autofilled_sheets <- c("Corporate Bond", "Municipal Bond", "Call", "Put", "CD", "Treasury Bond")
+  autofilled_sheets <- c("Corporate Bond", "Municipal Bond", "Call", "Put", "CD", "Treasury Bond", "Principal Paydown", "Called Bond")
 
   # Add Status worksheet that shows the number of products that need
   # assignment by Product Sub Type Name
