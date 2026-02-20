@@ -25,7 +25,11 @@
 #' # Generate results in CSV format
 #' results <- generate_query_results(query_payload, format = "csv")
 #' }
-generate_query_results <- function(query_payload, format = "csv", token = NULL) {
+generate_query_results <- function(
+    query_payload,
+    format = "csv",
+    token = NULL
+) {
     if (is.null(token)) {
         token <- get_token()
         if (is.null(token)) {
@@ -40,10 +44,21 @@ generate_query_results <- function(query_payload, format = "csv", token = NULL) 
     # Use longer timeout for query generation
     result <- orion_request(
         method = "POST",
-        endpoint = paste0("/api/v1/Reporting/Custom/", query_payload$id, "/Generate/", format),
+        endpoint = paste0(
+            "/api/v1/Reporting/Custom/",
+            query_payload$id,
+            "/Generate/",
+            format
+        ),
         json_data = query_payload,
         token = token,
-        error_context = paste("Generating query results for Query", query_payload$id, "in", format, "format"),
+        error_context = paste(
+            "Generating query results for Query",
+            query_payload$id,
+            "in",
+            format,
+            "format"
+        ),
         timeout = 1200L # 20 minutes for query generation
     )
 
@@ -60,20 +75,35 @@ generate_query_results <- function(query_payload, format = "csv", token = NULL) 
             if (is.null(location)) {
                 stop("CSV format returned 201 but no location header found")
             }
+            message(sprintf(
+                "Downloading query %s results (CSV)...",
+                query_payload$id
+            ))
             return(download_query_file(location, format, token))
         } else {
-            stop(sprintf("Unexpected status code %d for CSV format. Expected 201 with location header.", status_code))
+            stop(sprintf(
+                "Unexpected status code %d for CSV format. Expected 201 with location header.",
+                status_code
+            ))
         }
     } else if (format %in% c("Table", "SlickGrid")) {
         # Handle JSON formats
         if (status_code == 200) {
-            parse_result <- parse_json_response(result, error_context = "parsing query results", simplify_vector = TRUE)
+            parse_result <- parse_json_response(
+                result,
+                error_context = "parsing query results",
+                simplify_vector = TRUE
+            )
             if (!parse_result$success) {
                 stop(parse_result$error)
             }
             return(tibble::as_tibble(parse_result$data))
         } else {
-            stop(sprintf("Unexpected status code %d for %s format. Expected 200.", status_code, format))
+            stop(sprintf(
+                "Unexpected status code %d for %s format. Expected 200.",
+                status_code,
+                format
+            ))
         }
     } else {
         stop(sprintf("Unsupported format: %s", format))
