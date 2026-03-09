@@ -21,15 +21,23 @@ check_eq_framework <- function(data, exception_patterns = TRUE) {
 
   if (exception_patterns) {
     exception_regex <- "\\(ETF, exCore\\)|\\(ERISA\\)|\\(ETF, Sustainable\\)|\\(MF, Social\\)"
-    data <- data |> dplyr::filter(!stringr::str_detect(strategy, stringr::regex(exception_regex)))
+    data <- data |>
+      dplyr::filter(
+        !stringr::str_detect(strategy, stringr::regex(exception_regex))
+      )
   }
 
   eq_model_agg_summary <- data |>
-    dplyr::filter(type %in% c("Market Series", "Multifactor Series", "Income Series")) |>
+    dplyr::filter(
+      type %in% c("Market Series", "Multifactor Series", "Income Series")
+    ) |>
     dplyr::filter(asset_category == "Equity") |>
     tidyr::replace_na(list(agg_target = 0)) |>
     dplyr::group_by(strategy, type, model_agg, market_cap) |>
-    dplyr::summarise(model_agg_weight = dplyr::first(agg_target), .groups = "drop")
+    dplyr::summarise(
+      model_agg_weight = dplyr::first(agg_target),
+      .groups = "drop"
+    )
 
   results_all <- eq_model_agg_summary |>
     dplyr::group_by(strategy, type) |>
@@ -45,15 +53,39 @@ check_eq_framework <- function(data, exception_patterns = TRUE) {
       is_us_only = stringr::str_detect(strategy, stringr::regex("US Only")),
 
       # Base targets
-      base_lc_target = dplyr::case_match(type, "Income Series" ~ 60, "Multifactor Series" ~ 60, "Market Series" ~ 48, .default = 0),
-      base_sc_target = dplyr::case_match(type, "Income Series" ~ 8, "Multifactor Series" ~ 8, "Market Series" ~ 20, .default = 0),
+      base_lc_target = dplyr::case_match(
+        type,
+        "Income Series" ~ 60,
+        "Multifactor Series" ~ 60,
+        "Market Series" ~ 48,
+        .default = 0
+      ),
+      base_sc_target = dplyr::case_match(
+        type,
+        "Income Series" ~ 8,
+        "Multifactor Series" ~ 8,
+        "Market Series" ~ 20,
+        .default = 0
+      ),
 
       # Calc targets
       equity_framework_pct = ifelse(is_us_only, 1.0, 0.68),
       us_eq_target = eq_total_allocation * equity_framework_pct,
-      target_us_lc = ifelse(actual_us_lc > 0 | actual_us_sc > 0, us_eq_target * (base_lc_target / 68), 0),
-      target_us_sc = ifelse(actual_us_lc > 0 | actual_us_sc > 0, us_eq_target * (base_sc_target / 68), 0),
-      target_us_ac = ifelse(actual_us_lc == 0 & actual_us_sc == 0 & actual_us_ac > 0, us_eq_target, 0),
+      target_us_lc = ifelse(
+        actual_us_lc > 0 | actual_us_sc > 0,
+        us_eq_target * (base_lc_target / 68),
+        0
+      ),
+      target_us_sc = ifelse(
+        actual_us_lc > 0 | actual_us_sc > 0,
+        us_eq_target * (base_sc_target / 68),
+        0
+      ),
+      target_us_ac = ifelse(
+        actual_us_lc == 0 & actual_us_sc == 0 & actual_us_ac > 0,
+        us_eq_target,
+        0
+      ),
       target_us_mc = 0,
 
       # 1% tolerance for target compliance

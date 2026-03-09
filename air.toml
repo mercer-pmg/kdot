@@ -1,0 +1,4 @@
+# Air formatter config - matches kdot.Rproj (NumSpacesForTab: 2)
+[format]
+indent-width = 2
+indent-style = "space"

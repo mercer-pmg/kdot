@@ -37,7 +37,10 @@ check_delisted_products <- function(product_tickers, delisted_csv_path) {
   }
 
   delisted_df <- tibble::tibble(
-    cleaned_ticker = trimws(stringr::str_extract(as.character(delisted_raw[[2]]), "^[^\\s]+")),
+    cleaned_ticker = trimws(stringr::str_extract(
+      as.character(delisted_raw[[2]]),
+      "^[^\\s]+"
+    )),
     security_id = as.character(delisted_raw[[2]]),
     announced_date = as.character(delisted_raw[[3]]),
     effective_date = as.character(delisted_raw[[4]]),
@@ -48,7 +51,9 @@ check_delisted_products <- function(product_tickers, delisted_csv_path) {
     as.character() |>
     trimws() |>
     unique()
-  product_tickers_norm <- product_tickers_norm[!is.na(product_tickers_norm) & product_tickers_norm != ""]
+  product_tickers_norm <- product_tickers_norm[
+    !is.na(product_tickers_norm) & product_tickers_norm != ""
+  ]
 
   delisted_df |>
     dplyr::filter(cleaned_ticker %in% product_tickers_norm)

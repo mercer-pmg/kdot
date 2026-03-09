@@ -25,45 +25,48 @@
 #' results <- download_query_file(location_url, format = "csv", token = token)
 #' }
 download_query_file <- function(location_url, format = "csv", token) {
-    # Configure SSL certificate verification
-    cert_path <- Sys.getenv("CURL_CA_BUNDLE", unset = "C:\\Users\\AustinBurks\\github\\cacert.pem")
-    
-    # Build request with longer timeout for file downloads
-    req <- httr2::request(location_url) |>
-        httr2::req_headers(
-            "Authorization" = paste("Bearer", token),
-            "Accept" = "*/*"
-        )
-    
-    # Add SSL certificate if file exists
-    if (file.exists(cert_path)) {
-        req <- req |> httr2::req_options(cainfo = cert_path)
-    }
-    
-    req <- req |>
-        httr2::req_progress() |>
-        httr2::req_timeout(1200L) # 20 minutes for query generation
+  # Configure SSL certificate verification
+  cert_path <- Sys.getenv(
+    "CURL_CA_BUNDLE",
+    unset = "C:\\Users\\AustinBurks\\github\\cacert.pem"
+  )
 
-    resp <- httr2::req_perform(req)
-    status_code <- httr2::resp_status(resp)
+  # Build request with longer timeout for file downloads
+  req <- httr2::request(location_url) |>
+    httr2::req_headers(
+      "Authorization" = paste("Bearer", token),
+      "Accept" = "*/*"
+    )
 
-    if (status_code < 200 || status_code >= 300) {
-        stop(sprintf("Failed to download query file: HTTP %d", status_code))
-    }
+  # Add SSL certificate if file exists
+  if (file.exists(cert_path)) {
+    req <- req |> httr2::req_options(cainfo = cert_path)
+  }
 
-    # Save to temporary file
-    temp_file <- tempfile(fileext = paste0(".", format))
-    writeBin(httr2::resp_body_raw(resp), temp_file)
+  req <- req |>
+    httr2::req_progress() |>
+    httr2::req_timeout(1200L) # 20 minutes for query generation
 
-    # Read file based on format
-    if (format == "csv") {
-        df <- read.csv(temp_file, stringsAsFactors = FALSE)
-    } else {
-        stop(sprintf("Unsupported file format: %s", format))
-    }
+  resp <- httr2::req_perform(req)
+  status_code <- httr2::resp_status(resp)
 
-    # Clean up temp file
-    unlink(temp_file)
+  if (status_code < 200 || status_code >= 300) {
+    stop(sprintf("Failed to download query file: HTTP %d", status_code))
+  }
 
-    return(tibble::as_tibble(df))
+  # Save to temporary file
+  temp_file <- tempfile(fileext = paste0(".", format))
+  writeBin(httr2::resp_body_raw(resp), temp_file)
+
+  # Read file based on format
+  if (format == "csv") {
+    df <- read.csv(temp_file, stringsAsFactors = FALSE)
+  } else {
+    stop(sprintf("Unsupported file format: %s", format))
+  }
+
+  # Clean up temp file
+  unlink(temp_file)
+
+  return(tibble::as_tibble(df))
 }
