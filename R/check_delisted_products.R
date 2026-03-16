@@ -17,6 +17,8 @@
 #'
 #'
 check_delisted_products <- function(product_tickers, delisted_csv_path) {
+  message("[delisted] Reading Bloomberg delisted CSV: ", delisted_csv_path)
+
   empty_result <- tibble::tibble(
     cleaned_ticker = character(),
     security_id = character(),
@@ -32,7 +34,10 @@ check_delisted_products <- function(product_tickers, delisted_csv_path) {
     show_col_types = FALSE
   )
 
+  message("[delisted] Raw CSV: ", nrow(delisted_raw), " rows, ", ncol(delisted_raw), " cols")
+
   if (ncol(delisted_raw) < 6 || nrow(delisted_raw) == 0) {
+    message("[delisted] CSV empty or insufficient columns, returning empty result")
     return(empty_result)
   }
 
@@ -55,6 +60,16 @@ check_delisted_products <- function(product_tickers, delisted_csv_path) {
     !is.na(product_tickers_norm) & product_tickers_norm != ""
   ]
 
-  delisted_df |>
+  message("[delisted] Product tickers to check: ", length(product_tickers_norm))
+  message("[delisted] Unique delisted tickers in Bloomberg file: ", length(unique(delisted_df$cleaned_ticker)))
+
+  matches <- delisted_df |>
     dplyr::filter(cleaned_ticker %in% product_tickers_norm)
+
+  message("[delisted] Matches found: ", nrow(matches))
+  if (nrow(matches) > 0L) {
+    message("[delisted] Matched tickers: ", paste(matches$cleaned_ticker, collapse = ", "))
+  }
+
+  matches
 }
