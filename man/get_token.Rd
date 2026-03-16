@@ -8,19 +8,20 @@ get_token(token_input = NULL)
 }
 \arguments{
 \item{token_input}{Optional token string. If provided and valid, returns this token.
-If the token matches the masked value (all asterisks), falls back to environment variable.}
+If the token matches the masked value (all asterisks), falls back to registry/env.}
 }
 \value{
 Character string containing the API token, or NULL if not found.
 }
 \description{
-Retrieves the Orion API token from function input or environment variable.
+Retrieves the Orion API token from function input or Windows User registry.
 }
 \details{
 This function checks for a token in the following order:
 \itemize{
 \item Function input parameter (if provided and not masked)
-\item Environment variable \code{MA_ORION_API_TOKEN}
+\item On Windows: \code{MA_ORION_API_TOKEN} from User registry (current value, not inherited)
+\item On other OS: environment variable \code{MA_ORION_API_TOKEN}
 }
 }
 \examples{

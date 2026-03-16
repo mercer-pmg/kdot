@@ -26,11 +26,11 @@ High-level function to execute a custom reporting query with prompt updates.
 \dontrun{
 # Update prompts using named list
 results <- run_orion_query(
-    query_id = 40790,
-    prompt_updates = list(
-        "Enter Edited Start Date" = "1/1/2020",
-        "Enter Edited End Date" = "12/31/2023"
-    )
+  query_id = 40790,
+  prompt_updates = list(
+    "Enter Edited Start Date" = "1/1/2020",
+    "Enter Edited End Date" = "12/31/2023"
+  )
 )
 }
 }

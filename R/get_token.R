@@ -2,10 +2,10 @@
 
 #' Get Orion API Token
 #'
-#' Retrieves the Orion API token from function input or environment variable.
+#' Retrieves the Orion API token from function input or Windows User registry.
 #'
 #' @param token_input Optional token string. If provided and valid, returns this token.
-#'   If the token matches the masked value (all asterisks), falls back to environment variable.
+#'   If the token matches the masked value (all asterisks), falls back to registry/env.
 #'
 #' @return Character string containing the API token, or NULL if not found.
 #'
@@ -13,7 +13,8 @@
 #' This function checks for a token in the following order:
 #' \itemize{
 #'   \item Function input parameter (if provided and not masked)
-#'   \item Environment variable \code{MA_ORION_API_TOKEN}
+#'   \item On Windows: \code{MA_ORION_API_TOKEN} from User registry (current value, not inherited)
+#'   \item On other OS: environment variable \code{MA_ORION_API_TOKEN}
 #' }
 #'
 #' @export
@@ -34,7 +35,20 @@ get_token <- function(token_input = NULL) {
         }
     }
 
-    # Fall back to environment variable
+    # On Windows, read from User registry (current value, not inherited from parent process)
+    if (.Platform$OS.type == "windows") {
+      reg_token <- tryCatch({
+        out <- system2("powershell",
+          args = c("-NoProfile", "-Command",
+            "[Environment]::GetEnvironmentVariable('MA_ORION_API_TOKEN','User')"),
+          stdout = TRUE, stderr = FALSE)
+        trimws(out[1])
+      }, error = function(e) character(0))
+      if (length(reg_token) > 0 && nzchar(reg_token)) return(reg_token)
+      return(NULL)
+    }
+
+    # Non-Windows: use environment variable
     env_token <- Sys.getenv("MA_ORION_API_TOKEN")
     if (nzchar(env_token)) env_token else NULL
 }

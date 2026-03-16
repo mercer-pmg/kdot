@@ -179,6 +179,31 @@ create_classification_wb <- function(all_local, include_predictions = TRUE) {
       dplyr::mutate(`Assigned Asset Class` = "Treasuries")
     print("  - Treasury Bond: autofilled with 'Treasuries'")
   }
+  if ("Principal Paydown" %in% names(dat)) {
+    dat[["Principal Paydown"]] <- dat[["Principal Paydown"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Non-Traditional Bond")
+    print("  - Principal Paydown: autofilled with 'Non-Traditional Bond'")
+  }
+  if ("Called Bond" %in% names(dat)) {
+    dat[["Called Bond"]] <- dat[["Called Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Non-Traditional Bond")
+    print("  - Called Bond: autofilled with 'Non-Traditional Bond'")
+  }
+  if ("Preferred Stock" %in% names(dat)) {
+    dat[["Preferred Stock"]] <- dat[["Preferred Stock"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "US Preferred Stock")
+    print("  - Preferred Stock: autofilled with 'US Preferred Stock'")
+  }
+  if ("Agency Bond" %in% names(dat)) {
+    dat[["Agency Bond"]] <- dat[["Agency Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Non-Traditional Bond")
+    print("  - Agency Bond: autofilled with 'Non-Traditional Bond'")
+  }
+  if ("Foreign Bond" %in% names(dat)) {
+    dat[["Foreign Bond"]] <- dat[["Foreign Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "International Bond")
+    print("  - Foreign Bond: autofilled with 'International Bond'")
+  }
 
   # Add Segment column to Mutual Fund table
   # if("Mutual Fund" %in% names(dat)) {
@@ -190,7 +215,7 @@ create_classification_wb <- function(all_local, include_predictions = TRUE) {
   wb <- openxlsx::createWorkbook()
 
   # Define sheets that are autofilled (mark with white tab color for easy identification)
-  autofilled_sheets <- c("Corporate Bond", "Municipal Bond", "Call", "Put", "CD", "Treasury Bond")
+  autofilled_sheets <- c("Corporate Bond", "Municipal Bond", "Call", "Put", "CD", "Treasury Bond", "Principal Paydown", "Called Bond", "Preferred Stock", "Agency Bond", "Foreign Bond")
 
   # Add Status worksheet that shows the number of products that need
   # assignment by Product Sub Type Name

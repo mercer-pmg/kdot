@@ -8,8 +8,7 @@
 #' @export
 #'
 
-annual_returns <- function(x, start.date, end.date = Sys.Date()){
-
+annual_returns <- function(x, start.date, end.date = Sys.Date()) {
   PX_LAST <- price <- period <- last_date <- start_price <- end_price <- NULL
   ret <- security <- last_day <- NULL
 
@@ -19,9 +18,10 @@ annual_returns <- function(x, start.date, end.date = Sys.Date()){
   # Retrieve all values between start and end dates
   xx <- Rblpapi::bdh(
     securities = x,
-    fields     = "PX_LAST",
+    fields = "PX_LAST",
     start.date = lubridate::as_date(start.date),
-    end.date   = end.date)
+    end.date = end.date
+  )
 
   xx <- xx |>
     dplyr::mutate(price = PX_LAST) |>
@@ -38,10 +38,11 @@ annual_returns <- function(x, start.date, end.date = Sys.Date()){
   # Calculate percent change between year-ends
   xx <- xx |>
     dplyr::mutate(
-      end_price   = price,
-      start_price = dplyr::lag(price)) |>
+      end_price = price,
+      start_price = dplyr::lag(price)
+    ) |>
     tidyr::drop_na(start_price) |>
-    dplyr::mutate(ret = end_price/start_price-1) |>
+    dplyr::mutate(ret = end_price / start_price - 1) |>
     dplyr::select(date, ret, period)
 
   # Organize data

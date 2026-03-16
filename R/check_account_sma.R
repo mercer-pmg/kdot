@@ -33,46 +33,60 @@
 #' }
 #' }
 check_account_sma <- function(account_id, token) {
-    # Get account data with SMA expansion
-    account_result <- get_account(account_id, token, expand = "Sma")
+  # Get account data with SMA expansion
+  account_result <- get_account(account_id, token, expand = "Sma")
 
-    if (!account_result$success) {
-        return(list(
-            account_id = account_id,
-            account_number = NULL,
-            account_name = NULL,
-            isSMA = FALSE,
-            eclipseSMA = "False",
-            smaAssetID = NULL,
-            status = "Error",
-            message = account_result$error
-        ))
-    }
+  if (!account_result$success) {
+    return(list(
+      account_id = account_id,
+      account_number = NULL,
+      account_name = NULL,
+      isSMA = FALSE,
+      eclipseSMA = "False",
+      smaAssetID = NULL,
+      status = "Error",
+      message = account_result$error
+    ))
+  }
 
-    account_data <- account_result$data
+  account_data <- account_result$data
 
-    # Extract SMA values
-    sma_values <- extract_sma_values(account_data)
+  # Extract SMA values
+  sma_values <- extract_sma_values(account_data)
 
-    # Extract account details
-    account_number <- if (!is.null(account_data$accountNumber)) as.character(account_data$accountNumber) else NULL
-    account_name <- if (!is.null(account_data$name)) as.character(account_data$name) else NULL
+  # Extract account details
+  account_number <- if (!is.null(account_data$accountNumber)) {
+    as.character(account_data$accountNumber)
+  } else {
+    NULL
+  }
+  account_name <- if (!is.null(account_data$name)) {
+    as.character(account_data$name)
+  } else {
+    NULL
+  }
 
-    # Build status message
-    status_msg <- paste0(
-        "isSMA: ", sma_values$isSMA,
-        ", eclipseSMA: ", sma_values$eclipseSMA,
-        ifelse(!is.null(sma_values$smaAssetID), paste0(", smaAssetID: ", sma_values$smaAssetID), ", smaAssetID: None")
+  # Build status message
+  status_msg <- paste0(
+    "isSMA: ",
+    sma_values$isSMA,
+    ", eclipseSMA: ",
+    sma_values$eclipseSMA,
+    ifelse(
+      !is.null(sma_values$smaAssetID),
+      paste0(", smaAssetID: ", sma_values$smaAssetID),
+      ", smaAssetID: None"
     )
+  )
 
-    list(
-        account_id = account_id,
-        account_number = account_number,
-        account_name = account_name,
-        isSMA = sma_values$isSMA,
-        eclipseSMA = sma_values$eclipseSMA,
-        smaAssetID = sma_values$smaAssetID,
-        status = "Success",
-        message = status_msg
-    )
+  list(
+    account_id = account_id,
+    account_number = account_number,
+    account_name = account_name,
+    isSMA = sma_values$isSMA,
+    eclipseSMA = sma_values$eclipseSMA,
+    smaAssetID = sma_values$smaAssetID,
+    status = "Success",
+    message = status_msg
+  )
 }

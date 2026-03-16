@@ -22,9 +22,14 @@ check_duplicate_strategies <- function(data, threshold = 0) {
 
   # Model aggregation level
   matrix <- data |>
-    dplyr::mutate(agg_target = ifelse(is.na(agg_target), 0, round(agg_target, 6))) |>
+    dplyr::mutate(
+      agg_target = ifelse(is.na(agg_target), 0, round(agg_target, 6))
+    ) |>
     dplyr::group_by(strategy, model_agg) |>
-    dplyr::summarise(total_weight = dplyr::first(agg_target), .groups = "drop") |>
+    dplyr::summarise(
+      total_weight = dplyr::first(agg_target),
+      .groups = "drop"
+    ) |>
     tidyr::pivot_wider(
       names_from = model_agg,
       values_from = total_weight,
