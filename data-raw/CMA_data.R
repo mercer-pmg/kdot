@@ -5,7 +5,7 @@
 # cma_dirty_name <- "2024 CMAs with AQR Tax Aware Delphi Plus.xlsx"
 
 cma_dir <- "C:/Users/DavidAllen/OneDrive - Mercer Advisors/Documents/Data/CMAs/"
-cma_name <- "2025 LTCMAs.xlsx"
+cma_name <- "2026 LTCMAs.xlsx"
 
 
 cma_return_risk <- readxl::read_xlsx(

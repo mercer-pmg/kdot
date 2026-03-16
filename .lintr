@@ -1,0 +1,4 @@
+# lintr config - align with Air formatter (2-space indent)
+linters: linters_with_defaults(
+  indentation_linter = indentation_linter(indent = 2)
+)

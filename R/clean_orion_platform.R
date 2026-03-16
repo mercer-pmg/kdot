@@ -11,7 +11,12 @@ clean_orion_platform <- function(data, drop_columns = NULL) {
     dplyr::mutate(
       category = dplyr::case_when(
         type == "Blended Strategy" ~ "Blended",
-        type %in% c("Market Series", "Multifactor Series", "Income Series") ~ "Risk-Based",
+        type %in%
+          c(
+            "Market Series",
+            "Multifactor Series",
+            "Income Series"
+          ) ~ "Risk-Based",
         stringr::str_detect(type, "Strategies") ~ "Asset Class",
         .default = NA_character_
       ),
@@ -20,16 +25,28 @@ clean_orion_platform <- function(data, drop_columns = NULL) {
         stringr::str_detect(model_agg, "MA Multifactor") ~ "Multifactor Series",
         stringr::str_detect(model_agg, "MA Income") ~ "Income Series",
         stringr::str_detect(model_agg, "MA Cash Mgmt") ~ "Cash Mgmt",
-        stringr::str_detect(model_agg, "Quantitative Portfolio") ~ "Quantitative Portfolios",
+        stringr::str_detect(
+          model_agg,
+          "Quantitative Portfolio"
+        ) ~ "Quantitative Portfolios",
         stringr::str_detect(model_agg, "MA Fixed Income") ~ "Fixed Income",
-        stringr::str_detect(model_agg, "Ladder \\(ETF\\)$") ~ "Fixed Income ETF Ladder",
-        stringr::str_detect(model_agg, "BlackRock|Nuveen|PIMCO") ~ "Third-Party Fixed Income SMA",
+        stringr::str_detect(
+          model_agg,
+          "Ladder \\(ETF\\)$"
+        ) ~ "Fixed Income ETF Ladder",
+        stringr::str_detect(
+          model_agg,
+          "BlackRock|Nuveen|PIMCO"
+        ) ~ "Third-Party Fixed Income SMA",
         stringr::str_detect(model_agg, "Interval") ~ "Interval Funds",
         stringr::str_detect(model_agg, "Options") ~ "Options",
         .default = "Other"
       ),
       asset_category = dplyr::case_when(
-        stringr::str_detect(model_group, "Options|Interval Funds") ~ "Alternatives",
+        stringr::str_detect(
+          model_group,
+          "Options|Interval Funds"
+        ) ~ "Alternatives",
         stringr::str_detect(model_group, "Cash") ~ "Cash",
         stringr::str_detect(model_group, "Ladder") ~ "Fixed Income",
         stringr::str_detect(model_group, "Fixed Income") ~ "Fixed Income",

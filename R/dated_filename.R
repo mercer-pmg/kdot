@@ -8,7 +8,6 @@
 #'
 #'
 dated_filename <- function(x, type) {
-
   d <- Sys.Date() |> format("%Y.%m.%d")
 
   y <- paste0(x, " - ", d, ".", type)

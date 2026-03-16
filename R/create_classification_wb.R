@@ -147,7 +147,63 @@ create_classification_wb <- function(all_local, include_predictions = TRUE) {
   # Sort dat to match keys_n order to ensure styling is applied to correct sheets
   dat <- dat[keys_n$`Product Sub Type Name`]
 
-
+  # Autofill Assigned Asset Class for specific product types
+  print("Autofilling Assigned Asset Class for specific product types...")
+  if ("Corporate Bond" %in% names(dat)) {
+    dat[["Corporate Bond"]] <- dat[["Corporate Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Corporate Bond")
+    print("  - Corporate Bond: autofilled with 'Corporate Bond'")
+  }
+  if ("Municipal Bond" %in% names(dat)) {
+    dat[["Municipal Bond"]] <- dat[["Municipal Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "State-Specific Muni Bond")
+    print("  - Municipal Bond: autofilled with 'State-Specific Muni Bond'")
+  }
+  if ("Call" %in% names(dat)) {
+    dat[["Call"]] <- dat[["Call"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Options-Trading")
+    print("  - Call: autofilled with 'Options-Trading'")
+  }
+  if ("Put" %in% names(dat)) {
+    dat[["Put"]] <- dat[["Put"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Options-Trading")
+    print("  - Put: autofilled with 'Options-Trading'")
+  }
+  if ("CD" %in% names(dat)) {
+    dat[["CD"]] <- dat[["CD"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Certificate of Deposit")
+    print("  - CD: autofilled with 'Certificate of Deposit'")
+  }
+  if ("Treasury Bond" %in% names(dat)) {
+    dat[["Treasury Bond"]] <- dat[["Treasury Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Treasuries")
+    print("  - Treasury Bond: autofilled with 'Treasuries'")
+  }
+  if ("Principal Paydown" %in% names(dat)) {
+    dat[["Principal Paydown"]] <- dat[["Principal Paydown"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Non-Traditional Bond")
+    print("  - Principal Paydown: autofilled with 'Non-Traditional Bond'")
+  }
+  if ("Called Bond" %in% names(dat)) {
+    dat[["Called Bond"]] <- dat[["Called Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Non-Traditional Bond")
+    print("  - Called Bond: autofilled with 'Non-Traditional Bond'")
+  }
+  if ("Preferred Stock" %in% names(dat)) {
+    dat[["Preferred Stock"]] <- dat[["Preferred Stock"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "US Preferred Stock")
+    print("  - Preferred Stock: autofilled with 'US Preferred Stock'")
+  }
+  if ("Agency Bond" %in% names(dat)) {
+    dat[["Agency Bond"]] <- dat[["Agency Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "Non-Traditional Bond")
+    print("  - Agency Bond: autofilled with 'Non-Traditional Bond'")
+  }
+  if ("Foreign Bond" %in% names(dat)) {
+    dat[["Foreign Bond"]] <- dat[["Foreign Bond"]] |>
+      dplyr::mutate(`Assigned Asset Class` = "International Bond")
+    print("  - Foreign Bond: autofilled with 'International Bond'")
+  }
 
   # Add Segment column to Mutual Fund table
   # if("Mutual Fund" %in% names(dat)) {
@@ -157,6 +213,9 @@ create_classification_wb <- function(all_local, include_predictions = TRUE) {
 
   print("Creating workbook...")
   wb <- openxlsx::createWorkbook()
+
+  # Define sheets that are autofilled (mark with white tab color for easy identification)
+  autofilled_sheets <- c("Corporate Bond", "Municipal Bond", "Call", "Put", "CD", "Treasury Bond", "Principal Paydown", "Called Bond", "Preferred Stock", "Agency Bond", "Foreign Bond")
 
   # Add Status worksheet that shows the number of products that need
   # assignment by Product Sub Type Name
@@ -168,9 +227,11 @@ create_classification_wb <- function(all_local, include_predictions = TRUE) {
   print("Creating worksheets for each product type...")
   if (length(dat) > 0) {
     for (i in 1:length(dat)) {
-      print(paste("  - Adding worksheet:", names(dat)[i], "with", nrow(dat[[i]]), "products"))
-      openxlsx::addWorksheet(wb, names(dat)[i])
-      openxlsx::writeDataTable(wb, names(dat)[i], dat[[i]])
+      sheet_name <- names(dat)[i]
+      tab_colour <- if (sheet_name %in% autofilled_sheets) "white" else NULL
+      print(paste("  - Adding worksheet:", sheet_name, "with", nrow(dat[[i]]), "products"))
+      openxlsx::addWorksheet(wb, sheet_name, tabColour = tab_colour)
+      openxlsx::writeDataTable(wb, sheet_name, dat[[i]])
     }
   }
 

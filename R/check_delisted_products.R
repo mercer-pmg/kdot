@@ -1,0 +1,75 @@
+#' Check which product tickers appear in Bloomberg delisted securities list
+#'
+#' Reads a Bloomberg delisted assets CSV (headers in row 4, data from row 6,
+#' security ID in column 2) and compares against product tickers from the
+#' query 10635 Orion export. Bloomberg security IDs (e.g. "AAPL US Equity")
+#' are normalized by taking the text before the first space or trim.
+#'
+#' @param product_tickers Character vector of tickers from the query 10635
+#'   Orion export (e.g. `take_export()$Ticker`).
+#' @param delisted_csv_path Path to the Bloomberg delisted assets CSV.
+#'
+#' @returns A tibble with columns: cleaned_ticker, security_id (col 2 raw),
+#'   announced_date (col 3), effective_date (col 4), name (col 6 with
+#'   "Name: " stripped). Only rows where the product ticker matches a
+#'   delisted security. Empty tibble means all clear.
+#' @export
+#'
+#'
+check_delisted_products <- function(product_tickers, delisted_csv_path) {
+  message("[delisted] Reading Bloomberg delisted CSV: ", delisted_csv_path)
+
+  empty_result <- tibble::tibble(
+    cleaned_ticker = character(),
+    security_id = character(),
+    announced_date = character(),
+    effective_date = character(),
+    name = character()
+  )
+
+  delisted_raw <- readr::read_csv(
+    delisted_csv_path,
+    skip = 5,
+    col_names = FALSE,
+    show_col_types = FALSE
+  )
+
+  message("[delisted] Raw CSV: ", nrow(delisted_raw), " rows, ", ncol(delisted_raw), " cols")
+
+  if (ncol(delisted_raw) < 6 || nrow(delisted_raw) == 0) {
+    message("[delisted] CSV empty or insufficient columns, returning empty result")
+    return(empty_result)
+  }
+
+  delisted_df <- tibble::tibble(
+    cleaned_ticker = trimws(stringr::str_extract(
+      as.character(delisted_raw[[2]]),
+      "^[^\\s]+"
+    )),
+    security_id = as.character(delisted_raw[[2]]),
+    announced_date = as.character(delisted_raw[[3]]),
+    effective_date = as.character(delisted_raw[[4]]),
+    name = stringr::str_remove(as.character(delisted_raw[[6]]), "^Name:\\s*")
+  )
+
+  product_tickers_norm <- product_tickers |>
+    as.character() |>
+    trimws() |>
+    unique()
+  product_tickers_norm <- product_tickers_norm[
+    !is.na(product_tickers_norm) & product_tickers_norm != ""
+  ]
+
+  message("[delisted] Product tickers to check: ", length(product_tickers_norm))
+  message("[delisted] Unique delisted tickers in Bloomberg file: ", length(unique(delisted_df$cleaned_ticker)))
+
+  matches <- delisted_df |>
+    dplyr::filter(cleaned_ticker %in% product_tickers_norm)
+
+  message("[delisted] Matches found: ", nrow(matches))
+  if (nrow(matches) > 0L) {
+    message("[delisted] Matched tickers: ", paste(matches$cleaned_ticker, collapse = ", "))
+  }
+
+  matches
+}
